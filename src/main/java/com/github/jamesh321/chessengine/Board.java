@@ -1,7 +1,7 @@
 package com.github.jamesh321.chessengine;
 
 public class Board {
-    private long[] bitboards = new long[12]; // 0-5 for white pieces, 6-11 for black pieces
+    private long[] bitboards = new long[12];
 
     private boolean whiteTurn;
     private int castlingRights;
@@ -26,11 +26,47 @@ public class Board {
 
         whiteTurn = true;
         castlingRights = 0b1111; // BQ, BK, WQ, WK
-        enPassantSquare = -1;
+        enPassantSquare = -1; // 0-63
     }
 
     public long[] getBitboards() {
         return bitboards;
+    }
+
+    public void setBitboards(long[] bitboards) {
+        this.bitboards = bitboards;
+    }
+
+    public long getBitboard(int piece) {
+        return bitboards[piece];
+    }
+
+    public void setBitboard(int piece, long bitboard) {
+        this.bitboards[piece] = bitboard;
+    }
+
+    public boolean getWhiteTurn() {
+        return whiteTurn;
+    }
+
+    public void setWhiteTurn(boolean whiteTurn) {
+        this.whiteTurn = whiteTurn;
+    }
+
+    public int getCastlingRights() {
+        return castlingRights;
+    }
+
+    public void setCastlingRights(int castlingRights) {
+        this.castlingRights = castlingRights;
+    }
+
+    public int getEnPassantSquare() {
+        return enPassantSquare;
+    }
+
+    public void setEnPassantSquare(int enPassantSquare) {
+        this.enPassantSquare = enPassantSquare;
     }
 
     public int getPieceAtSquare(int square) {
@@ -44,15 +80,15 @@ public class Board {
         return -1;
     }
 
-    public void movePiece(int fromSquare, int toSquare) {
-        long fromBit = 0x8000000000000000L >>> fromSquare;
-        long toBit = 0x8000000000000000L >>> toSquare;
-        int fromPiece = getPieceAtSquare(fromSquare);
-        int toPiece = getPieceAtSquare(toSquare);
-        bitboards[fromPiece] = (bitboards[fromPiece] & ~fromBit) | toBit;
-        if (toPiece > -1) {
-            bitboards[toPiece] &= ~toBit;
+    public String formatBitboard(int piece) {
+        String bitboardString = "";
+        for (int row = 7; row >= 0; row--) {
+            for (int col = 7; col >= 0; col--) {
+                long bit = (bitboards[piece] >> (row * 8 + col)) & 1;
+                bitboardString += Long.toBinaryString(bit);
+            }
+            bitboardString += "\n";
         }
+        return bitboardString;
     }
-
 }
