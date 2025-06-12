@@ -14,21 +14,21 @@ public class BoardTest {
     }
 
     @Test
-    void getPieceAtSquareShouldReturnWhitePawn() {
+    void getPieceAtSquare_shouldReturnWhitePawn() {
         assertEquals(0, board.getPieceAtSquare(48));
         assertEquals(0, board.getPieceAtSquare(52));
         assertEquals(0, board.getPieceAtSquare(55));
     }
 
     @Test
-    void getPieceAtSquareShouldReturnEmptySquare() {
+    void getPieceAtSquare_shouldReturnEmptySquare() {
         assertEquals(-1, board.getPieceAtSquare(24));
         assertEquals(-1, board.getPieceAtSquare(28));
         assertEquals(-1, board.getPieceAtSquare(31));
     }
 
     @Test
-    void formatBitboardShouldReturnBitboardString() {
+    void formatBitboard_shouldReturnBitboardString() {
         String bitboardString = "00000000\n11111111\n00000000\n00000000\n00000000\n00000000\n00000000\n00000000\n";
         assertEquals(bitboardString, board.formatBitboard(6));
     }
