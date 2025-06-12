@@ -21,10 +21,10 @@ public class Move {
     }
 
     public static int getPromotionPiece(int move) {
-        return getFlag(move) & 0b0011;
+        return (getFlag(move) >> 2) & 0b0011;
     }
 
     public static int getSpecialMove(int move) {
-        return getFlag(move) & 0b1100;
+        return getFlag(move) & 0b0011;
     }
 }
