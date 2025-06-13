@@ -1,10 +1,10 @@
 package com.github.jamesh321.chessengine;
 
 public class DisplayBoard {
-    char[] pieces = { 'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k' };
-    char darkSquare = '■';
+    private static final char[] PIECES = { 'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k' };
+    private static final char DARK_SQUARE = '■';
 
-    public void displayBoard(Board board) {
+    public static void displayBoard(Board board) {
         System.out.println("     a  b  c  d  e  f  g  h");
         System.out.println("    ========================");
         System.out.println(convertBoard(board));
@@ -12,10 +12,10 @@ public class DisplayBoard {
         System.out.println("     a  b  c  d  e  f  g  h");
     }
 
-    public String convertBoard(Board board) {
+    public static String convertBoard(Board board) {
         String boardString = "";
         long startingSquare = 0x8000000000000000L;
-        long[] allPieces = board.getAllPieces();
+        long[] allPieces = board.getBitboards();
         boolean isEmptySquare;
         for (int i = 0; i < 64; i++) {
             isEmptySquare = true;
@@ -25,7 +25,7 @@ public class DisplayBoard {
             }
             for (int j = 0; j < 12; j++) {
                 if ((startingSquare & allPieces[j]) != 0) {
-                    boardString += pieces[j];
+                    boardString += PIECES[j];
                     isEmptySquare = false;
                     break;
                 }
@@ -34,7 +34,7 @@ public class DisplayBoard {
                 if (isLightSquare(i)) {
                     boardString += ' ';
                 } else {
-                    boardString += darkSquare;
+                    boardString += DARK_SQUARE;
                 }
             }
             if (i % 8 == 7) {
@@ -47,18 +47,12 @@ public class DisplayBoard {
             }
             startingSquare >>>= 1;
         }
-
         return boardString;
-
     }
 
-    public boolean isLightSquare(int square) {
+    public static boolean isLightSquare(int square) {
         int row = square / 8;
         int column = square % 8;
-        if ((row + column) % 2 == 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return (row + column) % 2 == 0;
     }
 }
