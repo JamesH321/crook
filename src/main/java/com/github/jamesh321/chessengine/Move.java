@@ -20,10 +20,22 @@ public class Move {
         return (move >>> 12) & FLAG_MASK;
     }
 
+    /*
+     * 0 - Queen
+     * 1 - Rook
+     * 2 - Bishop
+     * 3 - Knight
+     */
     public static int getPromotionPiece(int move) {
         return (getFlag(move) >> 2) & 0b0011;
     }
 
+    /*
+     * 0 - None
+     * 1 - Piece promotion
+     * 2 - En passant
+     * 3 - Castle
+     */
     public static int getSpecialMove(int move) {
         return getFlag(move) & 0b0011;
     }
