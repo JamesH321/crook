@@ -1,23 +1,25 @@
 package com.github.jamesh321.chessengine;
 
 public class Move {
-    private static final int TO_FROM_MASK = 0b111111;
-    private static final int FLAG_MASK = 0b1111;
+    private int data;
 
-    public static int generateMove(int from, int to, int flags) {
-        return from | (to << 6) | (flags << 12);
+    private final int TO_FROM_MASK = 0b111111;
+    private final int FLAG_MASK = 0b1111;
+
+    public Move(int from, int to, int flag) {
+        this.data = from | (to << 6) | (flag << 12);
     }
 
-    public static int getFrom(int move) {
-        return move & TO_FROM_MASK;
+    public int getFrom() {
+        return data & TO_FROM_MASK;
     }
 
-    public static int getTo(int move) {
-        return (move >>> 6) & TO_FROM_MASK;
+    public int getTo() {
+        return (data >>> 6) & TO_FROM_MASK;
     }
 
-    public static int getFlag(int move) {
-        return (move >>> 12) & FLAG_MASK;
+    public int getFlag() {
+        return (data >>> 12) & FLAG_MASK;
     }
 
     /*
@@ -26,8 +28,8 @@ public class Move {
      * 2 - Bishop
      * 3 - Knight
      */
-    public static int getPromotionPiece(int move) {
-        return (getFlag(move) >> 2) & 0b0011;
+    public int getPromotionPiece() {
+        return (getFlag() >> 2) & 0b0011;
     }
 
     /*
@@ -36,7 +38,7 @@ public class Move {
      * 2 - En passant
      * 3 - Castle
      */
-    public static int getSpecialMove(int move) {
-        return getFlag(move) & 0b0011;
+    public int getSpecialMove() {
+        return getFlag() & 0b0011;
     }
 }
