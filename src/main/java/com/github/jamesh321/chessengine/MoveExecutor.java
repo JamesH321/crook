@@ -1,31 +1,32 @@
 package com.github.jamesh321.chessengine;
 
 public class MoveExecutor {
-    public static void makeMove(Board board, int move) {
-        int from = Move.getFrom(move);
-        int to = Move.getTo(move);
+    public static void makeMove(Board board, Move move) {
+        int from = move.getFrom();
+        int to = move.getTo();
         long fromMask = 0x8000000000000000L >>> from;
         long toMask = 0x8000000000000000L >>> to;
         int fromPiece = board.getPieceAtSquare(from);
         int toPiece = board.getPieceAtSquare(to);
 
-        switch (Move.getSpecialMove(move)) {
+        switch (move.getSpecialMove()) {
             case 0: // None
                 movePiece(board, fromPiece, fromMask, toMask);
                 takePiece(board, toPiece, toMask);
                 break;
             case 1: // Piece promotion
-                int promotionPiece = getPieceIndex(Move.getPromotionPiece(move), board.getWhiteTurn());
+                int promotionPiece = getPieceIndex(move.getPromotionPiece(), board.isWhiteTurn());
                 movePiece(board, promotionPiece, fromMask, toMask);
                 takePiece(board, toPiece, toMask);
                 takePiece(board, fromPiece, fromMask);
-                System.out.println(board.formatBitboard(0));
                 break;
             case 2: // En passant
                 movePiece(board, fromPiece, fromMask, toMask);
                 takeEnPassantPiece(board, toMask);
+                break;
             case 3: // Castling
                 castle(board, toPiece, fromPiece, fromMask, toMask);
+                break;
         }
 
         setCastlingRights(board, fromPiece, from);
@@ -54,11 +55,9 @@ public class MoveExecutor {
 
     public static void takeEnPassantPiece(Board board, long toMask) {
         int toPiece;
-        System.out.println(Long.toBinaryString(toMask));
-        if (board.getWhiteTurn()) {
+        if (board.isWhiteTurn()) {
             toPiece = 6;
             toMask >>>= 8;
-            System.out.println(Long.toBinaryString(toMask));
         } else {
             toPiece = 0;
             toMask <<= 8;
@@ -68,8 +67,8 @@ public class MoveExecutor {
 
     public static void castle(Board board, int to, int fromPiece, long fromMask, long toMask) {
         int rook = 3;
-        if (!board.getWhiteTurn()) {
-            rook = 6;
+        if (!board.isWhiteTurn()) {
+            rook = 9;
         }
         movePiece(board, fromPiece, fromMask, toMask);
         // Queenside castle
