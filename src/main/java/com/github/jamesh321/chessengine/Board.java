@@ -7,6 +7,11 @@ public class Board {
     private int castlingRights;
     private int enPassantSquare;
 
+    private long whitePieces;
+    private long blackPieces;
+    private long occupiedSquares;
+    private long emptySquares;
+
     public Board() {
         // White pieces (indices 0-5)
         bitboards[0] = 0x000000000000FF00L; // Pawns
@@ -27,6 +32,8 @@ public class Board {
         whiteTurn = true;
         castlingRights = 0b1111; // BQ, BK, WQ, WK
         enPassantSquare = -1; // 0-63
+
+        updateBitboards();
     }
 
     public long[] getBitboards() {
@@ -45,7 +52,7 @@ public class Board {
         this.bitboards[piece] = bitboard;
     }
 
-    public boolean getWhiteTurn() {
+    public boolean isWhiteTurn() {
         return whiteTurn;
     }
 
@@ -67,6 +74,38 @@ public class Board {
 
     public void setEnPassantSquare(int enPassantSquare) {
         this.enPassantSquare = enPassantSquare;
+    }
+
+    public void updateWhitePieces() {
+        this.whitePieces = 0L;
+        for (int i = 0; i < 6; i++) {
+            this.whitePieces |= bitboards[i];
+        }
+    }
+
+    public void updateBlackPieces() {
+        this.blackPieces = 0L;
+        for (int i = 6; i < 12; i++) {
+            this.blackPieces |= bitboards[i];
+        }
+    }
+
+    public void updateOccupiedSquares() {
+        this.occupiedSquares = 0L;
+        for (int i = 0; i < 12; i++) {
+            this.occupiedSquares |= bitboards[i];
+        }
+    }
+
+    public void updateEmptySquares() {
+        this.emptySquares = ~occupiedSquares;
+    }
+
+    public void updateBitboards() {
+        updateWhitePieces();
+        updateBlackPieces();
+        updateOccupiedSquares();
+        updateEmptySquares();
     }
 
     public int getPieceAtSquare(int square) {
