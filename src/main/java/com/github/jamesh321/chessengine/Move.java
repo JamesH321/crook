@@ -6,6 +6,14 @@ public class Move {
     private final int TO_FROM_MASK = 0b111111;
     private final int FLAG_MASK = 0b1111;
 
+    public static final int NORMAL = 0;
+    public static final int EN_PASSANT = 2;
+    public static final int CASTLE = 3;
+    public static final int QUEEN_PROMOTION = 1;
+    public static final int ROOK_PROMOTION = 5;
+    public static final int BISHOP_PROMOTION = 9;
+    public static final int KNIGHT_PROMOTION = 13;
+
     public Move(int from, int to, int flag) {
         this.data = from | (to << 6) | (flag << 12);
     }
