@@ -25,7 +25,7 @@ public class MoveExecutor {
                 takeEnPassantPiece(board, toMask);
                 break;
             case 3: // Castling
-                castle(board, toPiece, fromPiece, fromMask, toMask);
+                castle(board, to, fromPiece, fromMask, toMask);
                 break;
         }
 
@@ -66,17 +66,20 @@ public class MoveExecutor {
     }
 
     public static void castle(Board board, int to, int fromPiece, long fromMask, long toMask) {
+        System.out.println(to);
         int rook = 3;
         if (!board.isWhiteTurn()) {
             rook = 9;
         }
         movePiece(board, fromPiece, fromMask, toMask);
-        // Queenside castle
-        if (to % 8 == 2) {
+
+        if (to == 58 || to == 2) {
             movePiece(board, rook, fromMask << 4, toMask >>> 1);
         } else {
             movePiece(board, rook, fromMask >>> 3, toMask << 1);
         }
+
+        board.setCastlingRights(0);
     }
 
     public static void setEnPassantSquare(Board board, int fromPiece, int from, int to) {
