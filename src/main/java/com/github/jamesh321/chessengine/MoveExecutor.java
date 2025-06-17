@@ -66,7 +66,6 @@ public class MoveExecutor {
     }
 
     public static void castle(Board board, int to, int fromPiece, long fromMask, long toMask) {
-        System.out.println(to);
         int rook = 3;
         if (!board.isWhiteTurn()) {
             rook = 9;
