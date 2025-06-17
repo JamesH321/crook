@@ -33,7 +33,7 @@ public class Board {
         castlingRights = 0b1111; // BQ, BK, WQ, WK
         enPassantSquare = -1; // 0-63
 
-        updateBitboards();
+        updateCompositeBitboards();
     }
 
     public long[] getBitboards() {
@@ -76,6 +76,10 @@ public class Board {
         this.enPassantSquare = enPassantSquare;
     }
 
+    public long getWhitePieces() {
+        return whitePieces;
+    }
+
     public void updateWhitePieces() {
         this.whitePieces = 0L;
         for (int i = 0; i < 6; i++) {
@@ -90,6 +94,10 @@ public class Board {
         }
     }
 
+    public long getBlackPieces() {
+        return blackPieces;
+    }
+
     public void updateOccupiedSquares() {
         this.occupiedSquares = 0L;
         for (int i = 0; i < 12; i++) {
@@ -97,11 +105,19 @@ public class Board {
         }
     }
 
+    public long getOccupiedSquares() {
+        return occupiedSquares;
+    }
+
     public void updateEmptySquares() {
         this.emptySquares = ~occupiedSquares;
     }
 
-    public void updateBitboards() {
+    public long getEmptySquares() {
+        return emptySquares;
+    }
+
+    public void updateCompositeBitboards() {
         updateWhitePieces();
         updateBlackPieces();
         updateOccupiedSquares();
@@ -129,5 +145,13 @@ public class Board {
             bitboardString += "\n";
         }
         return bitboardString;
+    }
+
+    public void restoreState(BoardState previousState) {
+        this.bitboards = previousState.getBitboards().clone();
+        this.whiteTurn = previousState.isWhiteTurn();
+        this.castlingRights = previousState.getCastlingRights();
+        this.enPassantSquare = previousState.getEnPassantSquare();
+        updateCompositeBitboards();
     }
 }
