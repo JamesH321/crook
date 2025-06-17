@@ -10,6 +10,10 @@ public class Move {
         this.data = from | (to << 6) | (flag << 12);
     }
 
+    public int getData() {
+        return data;
+    }
+
     public int getFrom() {
         return data & TO_FROM_MASK;
     }
