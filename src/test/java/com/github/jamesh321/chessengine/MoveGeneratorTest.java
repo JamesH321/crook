@@ -84,7 +84,7 @@ public class MoveGeneratorTest {
     }
 
     @Test
-    void generateWhitePawnMoves_shouldReturnCorrectNumberPromotionMoves() {
+    void generateWhitePawnMoves_shouldReturnCorrectNumberOfPromotionMoves() {
         for (int i = 6; i < 12; i++) {
             board.setBitboard(i, 0);
         }
@@ -98,7 +98,7 @@ public class MoveGeneratorTest {
     }
 
     @Test
-    void generateBlackPawnMoves_shouldReturnCorrectNumberPromotionMoves() {
+    void generateBlackPawnMoves_shouldReturnCorrectNumberOfPromotionMoves() {
         for (int i = 0; i < 6; i++) {
             board.setBitboard(i, 0);
         }
@@ -109,5 +109,11 @@ public class MoveGeneratorTest {
         assertEquals(Move.ROOK_PROMOTION, moves.get(1).getFlag());
         assertEquals(Move.BISHOP_PROMOTION, moves.get(2).getFlag());
         assertEquals(Move.KNIGHT_PROMOTION, moves.get(3).getFlag());
+    }
+
+    @Test
+    void generateKnightMoves_shouldReturnCorrectNumberOfMoves() {
+        assertEquals(4, MoveGenerator.generateKnightMoves(board).size());
+
     }
 }
