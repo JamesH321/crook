@@ -31,6 +31,8 @@ public class MoveExecutor {
 
         setCastlingRights(board, fromPiece, from);
         setEnPassantSquare(board, fromPiece, from, to);
+        board.updateCompositeBitboards();
+        board.setWhiteTurn(!board.isWhiteTurn());
     }
 
     public static void movePiece(Board board, int fromPiece, long fromMask, long toMask) {
