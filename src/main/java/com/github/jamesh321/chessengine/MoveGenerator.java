@@ -8,6 +8,8 @@ public class MoveGenerator {
         moveList.addAll(generatePawnMoves(board));
         moveList.addAll(generateKnightMoves(board));
         moveList.addAll(generateBishopMoves(board));
+        moveList.addAll(generateRookMoves(board));
+        moveList.addAll(generateQueenMoves(board));
         return moveList;
     }
 
@@ -76,6 +78,18 @@ public class MoveGenerator {
         long occupied = board.getOccupiedSquares();
 
         return getSlidingMoves(RayLookup.STRAIGHT_RAYS, rooks, occupied, ownPieces, board);
+    }
+
+    public static ArrayList<Move> generateQueenMoves(Board board) {
+        ArrayList<Move> moveList = new ArrayList<>();
+        long queens = board.isWhiteTurn() ? board.getBitboard(4) : board.getBitboard(10);
+        long ownPieces = board.isWhiteTurn() ? board.getWhitePieces() : board.getBlackPieces();
+        long occupied = board.getOccupiedSquares();
+
+        moveList.addAll(getSlidingMoves(RayLookup.STRAIGHT_RAYS, queens, occupied, ownPieces, board));
+        moveList.addAll(getSlidingMoves(RayLookup.DIAGONAL_RAYS, queens, occupied, ownPieces, board));
+
+        return moveList;
     }
 
     private static ArrayList<Move> getSlidingMoves(long[][] rayLookup, long piece, long occupied, long ownPieces,
