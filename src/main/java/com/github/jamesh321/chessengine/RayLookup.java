@@ -2,10 +2,7 @@ package com.github.jamesh321.chessengine;
 
 public class RayLookup {
     public static final long[][] DIAGONAL_RAYS = new long[64][4];
-    public static final long[][] DIAGONAL_MASKS = new long[64][4];
-
     public static final long[][] STRAIGHT_RAYS = new long[64][4];
-    public static final long[][] STRAIGHT_MASKS = new long[64][4];
 
     public static final int NE = 0;
     public static final int NW = 1;
@@ -31,11 +28,6 @@ public class RayLookup {
             DIAGONAL_RAYS[square][NW] = generateDiagonalRay(square, NW);
             DIAGONAL_RAYS[square][SE] = generateDiagonalRay(square, SE);
             DIAGONAL_RAYS[square][SW] = generateDiagonalRay(square, SW);
-
-            DIAGONAL_MASKS[square][NE] = ~DIAGONAL_RAYS[square][NE];
-            DIAGONAL_MASKS[square][NW] = ~DIAGONAL_RAYS[square][NW];
-            DIAGONAL_MASKS[square][SE] = ~DIAGONAL_RAYS[square][SE];
-            DIAGONAL_MASKS[square][SW] = ~DIAGONAL_RAYS[square][SW];
         }
     }
 
@@ -60,11 +52,6 @@ public class RayLookup {
             STRAIGHT_RAYS[square][E] = generateStraightRay(square, E);
             STRAIGHT_RAYS[square][S] = generateStraightRay(square, S);
             STRAIGHT_RAYS[square][W] = generateStraightRay(square, W);
-
-            STRAIGHT_MASKS[square][N] = ~STRAIGHT_RAYS[square][N];
-            STRAIGHT_MASKS[square][E] = ~STRAIGHT_RAYS[square][E];
-            STRAIGHT_MASKS[square][S] = ~STRAIGHT_RAYS[square][S];
-            STRAIGHT_MASKS[square][W] = ~STRAIGHT_RAYS[square][W];
         }
     }
 
