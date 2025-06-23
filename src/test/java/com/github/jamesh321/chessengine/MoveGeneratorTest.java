@@ -123,4 +123,11 @@ public class MoveGeneratorTest {
         board.updateCompositeBitboards();
         assertEquals(13, MoveGenerator.generateBishopMoves(board).size());
     }
+
+    @Test
+    void generateRookMoves_shouldReturnCorrectNumberOfMoves() {
+        board.setBitboard(3, 0b00100001L << 32);
+        board.updateCompositeBitboards();
+        assertEquals(18, MoveGenerator.generateRookMoves(board).size());
+    }
 }
