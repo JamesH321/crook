@@ -3,6 +3,14 @@ package com.github.jamesh321.chessengine;
 import java.util.ArrayList;
 
 public class MoveGenerator {
+    public static ArrayList<Move> generatePseudoLegalMoves(Board board) {
+        ArrayList<Move> moveList = new ArrayList<>();
+        moveList.addAll(generatePawnMoves(board));
+        moveList.addAll(generateKnightMoves(board));
+        moveList.addAll(generateBishopMoves(board));
+        return moveList;
+    }
+
     private static ArrayList<Move> getMoveList(long moves, int from, Board board) {
         ArrayList<Move> moveList = new ArrayList<>();
         while (moves != 0) {
@@ -13,7 +21,6 @@ public class MoveGenerator {
             moves &= moves - 1;
         }
         return moveList;
-
     }
 
     public static ArrayList<Move> generatePawnMoves(Board board) {
@@ -52,12 +59,49 @@ public class MoveGenerator {
             moveList.addAll(getMoveList(moves, from, board));
             knights &= knights - 1;
         }
-        for (Move move : moveList) {
-            System.out.print(move.getFrom());
-            System.out.println(move.getTo());
+        return moveList;
+    }
+
+    public static ArrayList<Move> generateBishopMoves(Board board) {
+        long bishops = board.isWhiteTurn() ? board.getBitboard(2) : board.getBitboard(8);
+        long ownPieces = board.isWhiteTurn() ? board.getWhitePieces() : board.getBlackPieces();
+        long occupied = board.getOccupiedSquares();
+
+        return getDiagonalMoves(bishops, occupied, ownPieces, board);
+    }
+
+    private static ArrayList<Move> getDiagonalMoves(long piece, long occupied, long ownPieces, Board board) {
+        ArrayList<Move> moveList = new ArrayList<>();
+        while (piece != 0) {
+            int from = 63 - Long.numberOfTrailingZeros(piece);
+            long[] rays = RayLookup.DIAGONAL_RAYS[from];
+            long moves = 0L;
+            for (int i = 0; i < 4; i++) {
+                moves |= getDiagonalRay(rays[i], occupied, from) & ~ownPieces;
+            }
+            moveList.addAll(getMoveList(moves, from, board));
+            piece &= piece - 1;
+        }
+        return moveList;
+    }
+
+    private static long getDiagonalRay(long ray, long occupied, int from) {
+        long blockers = ray & occupied;
+
+        if (blockers == 0) {
+            return ray;
         }
 
-        return moveList;
+        long blockerMask;
+        if (63 - Long.numberOfTrailingZeros(blockers) < from) {
+            int blockerSquare = Long.numberOfTrailingZeros(blockers);
+            blockerMask = (1L << blockerSquare + 1) - 1;
+        } else {
+            int blockerSquare = 63 - Long.numberOfLeadingZeros(blockers);
+            blockerMask = ~((1L << blockerSquare) - 1);
+        }
+
+        return ray & blockerMask;
     }
 
     public static ArrayList<Move> generateWhitePawnMoves(Board board) {
