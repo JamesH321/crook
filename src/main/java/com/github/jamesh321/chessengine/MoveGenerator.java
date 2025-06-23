@@ -67,17 +67,26 @@ public class MoveGenerator {
         long ownPieces = board.isWhiteTurn() ? board.getWhitePieces() : board.getBlackPieces();
         long occupied = board.getOccupiedSquares();
 
-        return getDiagonalMoves(bishops, occupied, ownPieces, board);
+        return getSlidingMoves(RayLookup.DIAGONAL_RAYS, bishops, occupied, ownPieces, board);
     }
 
-    private static ArrayList<Move> getDiagonalMoves(long piece, long occupied, long ownPieces, Board board) {
+    public static ArrayList<Move> generateRookMoves(Board board) {
+        long rooks = board.isWhiteTurn() ? board.getBitboard(3) : board.getBitboard(9);
+        long ownPieces = board.isWhiteTurn() ? board.getWhitePieces() : board.getBlackPieces();
+        long occupied = board.getOccupiedSquares();
+
+        return getSlidingMoves(RayLookup.STRAIGHT_RAYS, rooks, occupied, ownPieces, board);
+    }
+
+    private static ArrayList<Move> getSlidingMoves(long[][] rayLookup, long piece, long occupied, long ownPieces,
+            Board board) {
         ArrayList<Move> moveList = new ArrayList<>();
         while (piece != 0) {
             int from = 63 - Long.numberOfTrailingZeros(piece);
-            long[] rays = RayLookup.DIAGONAL_RAYS[from];
+            long[] rays = rayLookup[from];
             long moves = 0L;
             for (int i = 0; i < 4; i++) {
-                moves |= getDiagonalRay(rays[i], occupied, from) & ~ownPieces;
+                moves |= getRay(rays[i], occupied, from) & ~ownPieces;
             }
             moveList.addAll(getMoveList(moves, from, board));
             piece &= piece - 1;
@@ -85,7 +94,7 @@ public class MoveGenerator {
         return moveList;
     }
 
-    private static long getDiagonalRay(long ray, long occupied, int from) {
+    private static long getRay(long ray, long occupied, int from) {
         long blockers = ray & occupied;
 
         if (blockers == 0) {
@@ -100,7 +109,6 @@ public class MoveGenerator {
             int blockerSquare = 63 - Long.numberOfLeadingZeros(blockers);
             blockerMask = ~((1L << blockerSquare) - 1);
         }
-
         return ray & blockerMask;
     }
 
