@@ -43,10 +43,13 @@ public class RayLookup {
         int file = square % 8;
         int rank = square / 8;
         long ray = 0L;
-        while (file > 0 && file < 7 && rank > 0 && rank < 7) {
+        while (true) {
             file += DIAGONAL_DIRECTION[direction][0];
             rank += DIAGONAL_DIRECTION[direction][1];
-            ray |= 1L << 63 - (rank * 8 + file);
+            if (file < 0 || file > 7 || rank < 0 || rank > 7) {
+                break;
+            }
+            ray |= 1L << (63 - (rank * 8 + file));
         }
         return ray;
     }
@@ -69,10 +72,13 @@ public class RayLookup {
         int file = square % 8;
         int rank = square / 8;
         long ray = 0L;
-        while (file > 0 && file < 7 && rank > 0 && rank < 7) {
+        while (true) {
             file += STRAIGHT_DIRECTION[direction][0];
             rank += STRAIGHT_DIRECTION[direction][1];
-            ray |= 1L << 63 - (rank * 8 + file);
+            if (file < 0 || file > 7 || rank < 0 || rank > 7) {
+                break;
+            }
+            ray |= 1L << (63 - (rank * 8 + file));
         }
         return ray;
     }
