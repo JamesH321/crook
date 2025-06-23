@@ -116,4 +116,11 @@ public class MoveGeneratorTest {
         assertEquals(4, MoveGenerator.generateKnightMoves(board).size());
 
     }
+
+    @Test
+    void generateBishopMoves_shouldReturnCorrectNumberOfMoves() {
+        board.setBitboard(2, 0b00100010L << 24);
+        board.updateCompositeBitboards();
+        assertEquals(13, MoveGenerator.generateBishopMoves(board).size());
+    }
 }
