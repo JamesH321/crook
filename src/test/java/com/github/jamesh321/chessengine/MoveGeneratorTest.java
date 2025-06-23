@@ -130,4 +130,11 @@ public class MoveGeneratorTest {
         board.updateCompositeBitboards();
         assertEquals(18, MoveGenerator.generateRookMoves(board).size());
     }
+
+    @Test
+    void generateQueenMoves_shouldReturnCorrectNumberOfMoves() {
+        board.setBitboard(4, 0b00010000L << 32);
+        board.updateCompositeBitboards();
+        assertEquals(19, MoveGenerator.generateQueenMoves(board).size());
+    }
 }
