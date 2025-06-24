@@ -137,4 +137,20 @@ public class MoveGeneratorTest {
         board.updateCompositeBitboards();
         assertEquals(19, MoveGenerator.generateQueenMoves(board).size());
     }
+
+    @Test
+    void generateKingMoves_shouldReturnCorrectNumberOfMovesWithoutCastles() {
+        board.setBitboard(5, 1L << 16);
+        board.updateCompositeBitboards();
+        assertEquals(3, MoveGenerator.generateKingMoves(board).size());
+    }
+
+    @Test
+    void generateKingMoves_shouldReturnCorrectNumberOfMovesWithCastles() {
+        for (int i = 1; i < 5; i++) {
+            board.setBitboard(i, 0);
+        }
+        board.updateCompositeBitboards();
+        assertEquals(4, MoveGenerator.generateKingMoves(board).size());
+    }
 }
