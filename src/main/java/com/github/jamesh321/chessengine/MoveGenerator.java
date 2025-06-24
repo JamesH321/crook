@@ -10,15 +10,16 @@ public class MoveGenerator {
         moveList.addAll(generateBishopMoves(board));
         moveList.addAll(generateRookMoves(board));
         moveList.addAll(generateQueenMoves(board));
+        moveList.addAll(generateKingMoves(board));
         return moveList;
     }
 
-    private static ArrayList<Move> getMoveList(long moves, int from, Board board) {
+    private static ArrayList<Move> getMoveList(long moves, int from, int flag, Board board) {
         ArrayList<Move> moveList = new ArrayList<>();
         while (moves != 0) {
             int to = 63 - Long.numberOfTrailingZeros(moves);
             if (board.getPieceAtSquare(to) != 5 || board.getPieceAtSquare(to) != 11) {
-                moveList.add(new Move(from, to, Move.NORMAL));
+                moveList.add(new Move(from, to, flag));
             }
             moves &= moves - 1;
         }
@@ -58,7 +59,7 @@ public class MoveGenerator {
             moves |= (fromBitboard >>> 15) & NOT_A_MASK;
             moves |= (fromBitboard >>> 17) & NOT_H_MASK;
             moves &= movable;
-            moveList.addAll(getMoveList(moves, from, board));
+            moveList.addAll(getMoveList(moves, from, Move.NORMAL, board));
             knights &= knights - 1;
         }
         return moveList;
@@ -92,6 +93,49 @@ public class MoveGenerator {
         return moveList;
     }
 
+    public static ArrayList<Move> generateKingMoves(Board board) {
+        ArrayList<Move> moveList = new ArrayList<>();
+        long king = board.isWhiteTurn() ? board.getBitboard(5) : board.getBitboard(12);
+        long movable = board.isWhiteTurn() ? (board.getEmptySquares() | board.getBlackPieces())
+                : (board.getEmptySquares() | board.getWhitePieces());
+        int from = 63 - Long.numberOfTrailingZeros(king);
+        int castlingRights = board.isWhiteTurn() ? board.getCastlingRights() & 0b11 : board.getCastlingRights() >> 2;
+
+        moveList.addAll(getMoveList(getKingMask(king, movable), from, Move.NORMAL, board));
+        moveList.addAll(getMoveList(getcastleMoves(king, movable, from, castlingRights), from, Move.CASTLE, board));
+
+        return moveList;
+    }
+
+    private static long getKingMask(long king, long movable) {
+        long NOT_A_MASK = 0x7F7F7F7F7F7F7F7FL;
+        long NOT_H_MASK = 0xFEFEFEFEFEFEFEFEL;
+        long fromBitboard = 1L << Long.numberOfTrailingZeros(king);
+        long moves = 0L;
+
+        moves |= (fromBitboard << 1) & NOT_H_MASK;
+        moves |= (fromBitboard >>> 1) & NOT_A_MASK;
+        moves |= (fromBitboard << 9) & NOT_H_MASK;
+        moves |= (fromBitboard >>> 7) & NOT_H_MASK;
+        moves |= (fromBitboard << 8);
+        moves |= (fromBitboard >>> 8);
+        moves |= (fromBitboard << 7) & NOT_A_MASK;
+        moves |= (fromBitboard >>> 9) & NOT_A_MASK;
+
+        return moves & movable;
+    }
+
+    private static long getcastleMoves(long king, long movable, int from, int castlingRights) {
+        long QUEENSIDE_MASK = 0b01110000L << (63 - from) / 8;
+        long KINGSIDE_MASK = 0b00000110L << (63 - from) / 8;
+        long moves = 0L;
+
+        moves |= ((QUEENSIDE_MASK & movable) == QUEENSIDE_MASK) && ((castlingRights & 0b10) == 0b10) ? king << 2 : 0;
+        moves |= ((KINGSIDE_MASK & movable) == KINGSIDE_MASK) && ((castlingRights & 1) == 1) ? king >>> 2 : 0;
+
+        return moves;
+    }
+
     private static ArrayList<Move> getSlidingMoves(long[][] rayLookup, long piece, long occupied, long ownPieces,
             Board board) {
         ArrayList<Move> moveList = new ArrayList<>();
@@ -102,7 +146,7 @@ public class MoveGenerator {
             for (int i = 0; i < 4; i++) {
                 moves |= getRay(rays[i], occupied, from) & ~ownPieces;
             }
-            moveList.addAll(getMoveList(moves, from, board));
+            moveList.addAll(getMoveList(moves, from, Move.NORMAL, board));
             piece &= piece - 1;
         }
         return moveList;
