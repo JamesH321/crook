@@ -72,12 +72,16 @@ public class MoveExecutorTest {
     void testCastlingQueenside() {
         Move move1 = new Move(59, 45, 0);
         MoveExecutor.makeMove(board, move1);
+        board.setWhiteTurn(true);
         Move move2 = new Move(58, 46, 0);
         MoveExecutor.makeMove(board, move2);
+        board.setWhiteTurn(true);
         Move move3 = new Move(57, 47, 0);
         MoveExecutor.makeMove(board, move3);
+        board.setWhiteTurn(true);
         Move move4 = new Move(60, 58, 0b0011);
         MoveExecutor.makeMove(board, move4);
+        board.setWhiteTurn(true);
         assertEquals(5, board.getPieceAtSquare(58));
         assertEquals(3, board.getPieceAtSquare(59));
         assertEquals(-1, board.getPieceAtSquare(60));
