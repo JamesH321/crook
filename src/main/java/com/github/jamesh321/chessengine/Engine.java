@@ -11,6 +11,10 @@ public class Engine {
         this.history = new Stack<>();
     }
 
+    public Board getBoard() {
+        return board;
+    }
+
     public void makeMove(Move move) {
         history.push(new BoardState(board));
         MoveExecutor.makeMove(board, move);
