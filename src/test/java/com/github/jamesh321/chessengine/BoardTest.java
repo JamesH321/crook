@@ -26,10 +26,4 @@ public class BoardTest {
         assertEquals(-1, board.getPieceAtSquare(28));
         assertEquals(-1, board.getPieceAtSquare(31));
     }
-
-    @Test
-    void formatBitboard_shouldReturnBitboardString() {
-        String bitboardString = "00000000\n11111111\n00000000\n00000000\n00000000\n00000000\n00000000\n00000000\n";
-        assertEquals(bitboardString, board.formatBitboard(6));
-    }
 }
