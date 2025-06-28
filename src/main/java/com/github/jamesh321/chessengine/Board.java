@@ -160,6 +160,8 @@ public class Board {
         this.whiteTurn = previousState.isWhiteTurn();
         this.castlingRights = previousState.getCastlingRights();
         this.enPassantSquare = previousState.getEnPassantSquare();
+        this.halfmoveClock = previousState.getFullmoveCounter();
+        this.fullmoveCounter = previousState.getFullmoveCounter();
         updateCompositeBitboards();
     }
 }
