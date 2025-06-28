@@ -6,6 +6,8 @@ public class Board {
     private boolean whiteTurn;
     private int castlingRights;
     private int enPassantSquare;
+    private int halfmoveClock;
+    private int fullmoveCounter;
 
     private long whitePieces;
     private long blackPieces;
@@ -32,6 +34,8 @@ public class Board {
         whiteTurn = true;
         castlingRights = 0b1111; // BQ, BK, WQ, WK
         enPassantSquare = -1; // 0-63
+        halfmoveClock = 0;
+        fullmoveCounter = 1;
 
         updateCompositeBitboards();
     }
@@ -74,6 +78,22 @@ public class Board {
 
     public void setEnPassantSquare(int enPassantSquare) {
         this.enPassantSquare = enPassantSquare;
+    }
+
+    public int getHalfmoveClock() {
+        return halfmoveClock;
+    }
+
+    public void setHalfmoveClock(int halfmoveClock) {
+        this.halfmoveClock = halfmoveClock;
+    }
+
+    public int getFullmoveNumber() {
+        return fullmoveCounter;
+    }
+
+    public void setFullmoveNumber(int fullmoveCounter) {
+        this.fullmoveCounter = fullmoveCounter;
     }
 
     public long getWhitePieces() {
@@ -133,18 +153,6 @@ public class Board {
         }
         // Empty square
         return -1;
-    }
-
-    public String formatBitboard(int piece) {
-        String bitboardString = "";
-        for (int row = 7; row >= 0; row--) {
-            for (int col = 7; col >= 0; col--) {
-                long bit = (bitboards[piece] >> (row * 8 + col)) & 1;
-                bitboardString += Long.toBinaryString(bit);
-            }
-            bitboardString += "\n";
-        }
-        return bitboardString;
     }
 
     public void restoreState(BoardState previousState) {
