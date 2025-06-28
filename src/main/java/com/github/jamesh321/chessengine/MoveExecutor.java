@@ -31,6 +31,8 @@ public class MoveExecutor {
 
         setCastlingRights(board, fromPiece, from);
         setEnPassantSquare(board, fromPiece, from, to);
+        setHalfmoveClock(board, fromPiece, toPiece);
+        incrementFullmoveCounter(board);
         board.updateCompositeBitboards();
         board.setWhiteTurn(!board.isWhiteTurn());
     }
@@ -84,13 +86,18 @@ public class MoveExecutor {
     }
 
     public static void setEnPassantSquare(Board board, int fromPiece, int from, int to) {
-        if (fromPiece == 0 || fromPiece == 6) {
+        int newEnPassantSquare = -1;
+
+        if (fromPiece == 0) {
+            if (from - to == -16) {
+                newEnPassantSquare = to - 8;
+            }
+        } else if (fromPiece == 6) {
             if (from - to == 16) {
-                board.setEnPassantSquare(to + 8);
-            } else if (from - to == -16) {
-                board.setEnPassantSquare(to - 8);
+                newEnPassantSquare = to + 8;
             }
         }
+        board.setEnPassantSquare(newEnPassantSquare);
     }
 
     public static void setCastlingRights(Board board, int fromPiece, int from) {
@@ -108,5 +115,19 @@ public class MoveExecutor {
                 break;
         }
         board.setCastlingRights(castlingRights);
+    }
+
+    public static void setHalfmoveClock(Board board, int fromPiece, int toPiece) {
+        if (fromPiece == 0 || fromPiece == 6 || toPiece != -1) {
+            board.setHalfmoveClock(0);
+        } else {
+            board.setHalfmoveClock(board.getHalfmoveClock() + 1);
+        }
+    }
+
+    public static void incrementFullmoveCounter(Board board) {
+        if (!board.isWhiteTurn()) {
+            board.setFullmoveNumber(board.getFullmoveNumber() + 1);
+        }
     }
 }
