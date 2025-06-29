@@ -86,18 +86,14 @@ public class MoveExecutor {
     }
 
     public static void setEnPassantSquare(Board board, int fromPiece, int from, int to) {
-        int newEnPassantSquare = -1;
+        int enPassantSquare = -1;
 
-        if (fromPiece == 0) {
-            if (from - to == -16) {
-                newEnPassantSquare = to - 8;
-            }
-        } else if (fromPiece == 6) {
-            if (from - to == 16) {
-                newEnPassantSquare = to + 8;
-            }
+        if (fromPiece == 0 && from - to == 16) {
+            enPassantSquare = to + 8;
+        } else if (fromPiece == 6 && from - to == -16) {
+            enPassantSquare = to - 8;
         }
-        board.setEnPassantSquare(newEnPassantSquare);
+        board.setEnPassantSquare(enPassantSquare);
     }
 
     public static void setCastlingRights(Board board, int fromPiece, int from) {
