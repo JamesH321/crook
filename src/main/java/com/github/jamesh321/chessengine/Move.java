@@ -53,4 +53,13 @@ public class Move {
     public int getSpecialMove() {
         return getFlag() & 0b0011;
     }
+
+    public String toString() {
+        String fromFile = Character.toString((char) (getFrom() % 8) + 'a');
+        String fromRank = Integer.toString(8 - (getFrom() / 8));
+        String toFile = Character.toString((char) (getTo() % 8) + 'a');
+        String toRank = Integer.toString(8 - (getTo() / 8));
+
+        return fromFile + fromRank + toFile + toRank;
+    }
 }
