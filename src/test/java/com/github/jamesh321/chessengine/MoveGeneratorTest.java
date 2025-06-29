@@ -141,6 +141,7 @@ public class MoveGeneratorTest {
     @Test
     void generateKingMoves_shouldReturnCorrectNumberOfMovesWithoutCastles() {
         board.setBitboard(5, 1L << 16);
+        board.setCastlingRights(0);
         board.updateCompositeBitboards();
         assertEquals(3, MoveGenerator.generateKingMoves(board).size());
     }
