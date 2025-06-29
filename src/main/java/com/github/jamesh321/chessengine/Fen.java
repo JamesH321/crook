@@ -15,6 +15,7 @@ public class Fen {
         setEnPassantSquare(fields[10], board);
         board.setHalfmoveClock(Integer.parseInt(fields[11]));
         board.setFullmoveNumber(Integer.parseInt(fields[12]));
+        board.updateCompositeBitboards();
     }
 
     private static void loadBoard(String[] fields, Board board) {
