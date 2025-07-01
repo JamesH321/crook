@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class PerftTest {
     Engine engine;
@@ -14,18 +14,17 @@ public class PerftTest {
         engine = new Engine(new Board());
     }
 
-    // Test the starting position
+    // Test starting position
     @Test
     void testPosition1() {
         long[] expectedNodes = { 1, 20, 400, 8902, 197281, 4865609 };
         for (int depth = 0; depth < expectedNodes.length; depth++) {
             long actualNodes = perft(engine, depth);
-            perftDivide(depth);
             assertEquals(expectedNodes[depth], actualNodes);
         }
     }
 
-    // Test a position known as kiwipete
+    // Test position known as kiwipete
     @Test
     void testPosition2() {
         long[] expectedNodes = { 1, 48, 2039, 97862, 4085603 };
@@ -37,12 +36,15 @@ public class PerftTest {
     }
 
     private long perft(Engine engine, int depth) {
-        int total = 0;
-
         if (depth == 0) {
             return 1;
         }
-        for (Move move : MoveGenerator.generateLegalMoves(engine.getBoard())) {
+        ArrayList<Move> moves = MoveGenerator.generateLegalMoves(engine.getBoard());
+        if (depth == 1) {
+            return moves.size();
+        }
+        long total = 0;
+        for (Move move : moves) {
             engine.makeMove(move);
             total += perft(engine, depth - 1);
             engine.undoMove();
@@ -58,17 +60,13 @@ public class PerftTest {
 
         System.out.println("Running Perft Divide for depth: " + depth);
         long totalNodes = 0;
-
-        List<Move> moves = MoveGenerator.generateLegalMoves(engine.getBoard());
+        ArrayList<Move> moves = MoveGenerator.generateLegalMoves(engine.getBoard());
 
         for (Move move : moves) {
             engine.makeMove(move);
-
             long nodes = perft(engine, depth - 1);
             totalNodes += nodes;
-
             System.out.println(move.toString() + ": " + nodes);
-
             engine.undoMove();
         }
 
