@@ -5,35 +5,62 @@ import java.util.ArrayList;
 public class MoveGenerator {
     public static ArrayList<Move> generateLegalMoves(Board board) {
         BoardState boardState = new BoardState(board);
-        int kingSquare = Long.numberOfLeadingZeros(board.getBitboard(5));
-        ArrayList<Move> moveList = generatePseudoLegalMoves(board);
-        for (Move move : moveList) {
+        long kingBitboard = board.isWhiteTurn() ? board.getBitboard(5) : board.getBitboard(11);
+        int kingSquare = kingBitboard != 0 ? 63 - Long.numberOfTrailingZeros(kingBitboard) : -1;
+        ArrayList<Move> legalMoveList = new ArrayList<>();
+        for (Move move : generatePseudoLegalMoves(board)) {
             if (move.getTo() == kingSquare) {
-                moveList.remove(move);
                 continue;
             }
             MoveExecutor.makeMove(board, move);
+            boolean isLegal = true;
+            long newKingBitboard = board.isWhiteTurn() ? board.getBitboard(11) : board.getBitboard(5);
+            int newKingSquare = newKingBitboard != 0 ? Long.numberOfLeadingZeros(newKingBitboard) : -1;
             for (Move move2 : generatePseudoLegalMoves(board)) {
-                if (move2.getTo() == kingSquare) {
-                    moveList.remove(move);
+                if (move2.getTo() == newKingSquare) {
+                    isLegal = false;
                     break;
-                } else if (move.getFlag() == Move.CASTLE && !isLegalCastle(move, move2)) {
-                    moveList.remove(move);
+                } else if (move.getFlag() == Move.CASTLE && !isLegalCastle(move, move2, board)) {
+                    isLegal = false;
                 }
+            }
+            if (isLegal) {
+                legalMoveList.add(move);
             }
             board.restoreState(boardState);
         }
-        return moveList;
+        return legalMoveList;
     }
 
-    private static boolean isLegalCastle(Move move, Move move2) {
+    private static boolean isLegalCastle(Move move, Move move2, Board board) {
         int castleDirection = move.getTo() - move.getFrom();
         if (castleDirection == 2 && move2.getTo() == move.getFrom() + 1) {
             return false;
         } else if (castleDirection == -2 && move2.getTo() == move.getFrom() - 1) {
             return false;
+        } else if (move.getFrom() == move2.getTo()) {
+            return false;
+        } else if (isKingAttackedByPawn(board, move.getFrom())) {
+            return false;
         }
         return true;
+    }
+
+    private static boolean isKingAttackedByPawn(Board board, int square) {
+        if (board.isWhiteTurn()) {
+            if ((board.getBitboard(0) & (1L << (63 - (square + 9)))) != 0) {
+                return true;
+            } else if ((board.getBitboard(0) & (1L << (63 - (square + 7)))) != 0) {
+                return true;
+            }
+        } else {
+            if ((board.getBitboard(6) & (1L << (63 - (square - 9)))) != 0) {
+                return true;
+            } else if ((board.getBitboard(6) & (1L << (63 - (square - 7)))) != 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static ArrayList<Move> generatePseudoLegalMoves(Board board) {
@@ -127,13 +154,14 @@ public class MoveGenerator {
     public static ArrayList<Move> generateKingMoves(Board board) {
         ArrayList<Move> moveList = new ArrayList<>();
         long king = board.isWhiteTurn() ? board.getBitboard(5) : board.getBitboard(11);
-        long movable = board.isWhiteTurn() ? (board.getEmptySquares() | board.getBlackPieces())
-                : (board.getEmptySquares() | board.getWhitePieces());
+        long empty = board.getEmptySquares();
+        long movable = board.isWhiteTurn() ? empty | board.getBlackPieces()
+                : empty | board.getWhitePieces();
         int from = 63 - Long.numberOfTrailingZeros(king);
         int castlingRights = board.isWhiteTurn() ? board.getCastlingRights() & 0b11 : board.getCastlingRights() >> 2;
 
         moveList.addAll(getMoveList(getKingMask(king, movable), from, Move.NORMAL));
-        moveList.addAll(getMoveList(getcastleMoves(king, movable, from, castlingRights), from, Move.CASTLE));
+        moveList.addAll(getMoveList(getcastleMoves(king, empty, from, castlingRights), from, Move.CASTLE));
 
         return moveList;
     }
@@ -156,14 +184,13 @@ public class MoveGenerator {
         return moves & movable;
     }
 
-    private static long getcastleMoves(long king, long movable, int from, int castlingRights) {
+    private static long getcastleMoves(long king, long empty, int from, int castlingRights) {
         long QUEENSIDE_MASK = 0b01110000L << 60 - from;
         long KINGSIDE_MASK = 0b00000110L << 60 - from;
         long moves = 0L;
 
-        moves |= ((QUEENSIDE_MASK & movable) == QUEENSIDE_MASK) && ((castlingRights & 0b10) == 0b10) ? king << 2 : 0;
-        moves |= ((KINGSIDE_MASK & movable) == KINGSIDE_MASK) && ((castlingRights & 1) == 1) ? king >>> 2 : 0;
-
+        moves |= ((QUEENSIDE_MASK & empty) == QUEENSIDE_MASK) && ((castlingRights & 0b10) == 0b10) ? king << 2 : 0;
+        moves |= ((KINGSIDE_MASK & empty) == KINGSIDE_MASK) && ((castlingRights & 1) == 1) ? king >>> 2 : 0;
         return moves;
     }
 
@@ -193,7 +220,7 @@ public class MoveGenerator {
         long blockerMask;
         if (63 - Long.numberOfTrailingZeros(blockers) < from) {
             int blockerSquare = Long.numberOfTrailingZeros(blockers);
-            blockerMask = (1L << blockerSquare + 1) - 1;
+            blockerMask = ((1L << blockerSquare) - 1) | (1L << blockerSquare);
         } else {
             int blockerSquare = 63 - Long.numberOfLeadingZeros(blockers);
             blockerMask = ~((1L << blockerSquare) - 1);
@@ -209,7 +236,7 @@ public class MoveGenerator {
         long blackPiecesNoPromotion = board.getBlackPieces() & ~(0b11111111L << 56);
         long blackPiecesPromotion = board.getBlackPieces() & (0b11111111L << 56);
         long fileMask = 0x101010101010101L;
-        long enPassantSquare = 1L << (63 - board.getEnPassantSquare());
+        long enPassantSquare = board.getEnPassantSquare() != -1 ? 1L << (63 - board.getEnPassantSquare()) : 0;
 
         moveList.addAll(generateWhiteSinglePawnPushMoves(pawns, emptyNoPromotion, board));
         moveList.addAll(generateWhiteDoublePawnPushMoves(pawns, emptyNoPromotion, board));
@@ -229,7 +256,7 @@ public class MoveGenerator {
         long whitePiecesNoPromotion = board.getWhitePieces() & ~0b11111111;
         long whitePiecesPromotion = board.getWhitePieces() & 0b11111111;
         long fileMask = 0x101010101010101L;
-        long enPassantSquare = 1L << (63 - board.getEnPassantSquare());
+        long enPassantSquare = board.getEnPassantSquare() != -1 ? 1L << (63 - board.getEnPassantSquare()) : 0;
 
         moveList.addAll(generateBlackSinglePawnPushMoves(pawns, emptyNoPromotion, board));
         moveList.addAll(generateBlackDoublePawnPushMoves(pawns, emptyNoPromotion, board));
