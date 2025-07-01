@@ -29,7 +29,7 @@ public class MoveExecutor {
                 break;
         }
 
-        setCastlingRights(board, fromPiece, from);
+        setCastlingRights(board, fromPiece, toPiece, from, to);
         setEnPassantSquare(board, fromPiece, from, to);
         setHalfmoveClock(board, fromPiece, toPiece);
         incrementFullmoveCounter(board);
@@ -82,7 +82,11 @@ public class MoveExecutor {
             movePiece(board, rook, fromMask >>> 3, toMask << 1);
         }
 
-        board.setCastlingRights(0);
+        if (board.isWhiteTurn()) {
+            board.setCastlingRights(board.getCastlingRights() & 0b1100);
+        } else {
+            board.setCastlingRights(board.getCastlingRights() & 0b11);
+        }
     }
 
     public static void setEnPassantSquare(Board board, int fromPiece, int from, int to) {
@@ -96,18 +100,38 @@ public class MoveExecutor {
         board.setEnPassantSquare(enPassantSquare);
     }
 
-    public static void setCastlingRights(Board board, int fromPiece, int from) {
+    public static void setCastlingRights(Board board, int fromPiece, int toPiece, int from, int to) {
         int castlingRights = board.getCastlingRights();
         switch (fromPiece) {
             case 3:
             case 9:
-                castlingRights &= from / 8 == 0 ? ~(fromPiece - 1) : ~((fromPiece - 1) >> 1);
+                if (from / 8 == 0) {
+                    castlingRights &= from % 8 == 0 ? 0b0111 : 0b1011;
+                } else {
+                    castlingRights &= from % 8 == 0 ? 0b1101 : 0b1110;
+                }
                 break;
             case 5:
                 castlingRights &= ~0b0011;
                 break;
             case 11:
                 castlingRights &= ~0b1100;
+                break;
+        }
+        switch (toPiece) {
+            case 3:
+                if (to % 8 == 0) {
+                    castlingRights &= 0b1101;
+                } else if (to % 8 == 7) {
+                    castlingRights &= 0b1110;
+                }
+                break;
+            case 9:
+                if (to % 8 == 0) {
+                    castlingRights &= 0b0111;
+                } else if (to % 8 == 7) {
+                    castlingRights &= 0b1011;
+                }
                 break;
         }
         board.setCastlingRights(castlingRights);
