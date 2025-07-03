@@ -1,6 +1,6 @@
 package com.github.jamesh321.chessengine;
 
-public class RayLookup {
+public class LookupTables {
     public static final long[][] DIAGONAL_RAYS = new long[64][4];
     public static final long[][] STRAIGHT_RAYS = new long[64][4];
     public static final long[] KNIGHT_MOVES = new long[64];
