@@ -96,27 +96,13 @@ public class MoveGenerator {
 
     public static ArrayList<Move> generateKnightMoves(Board board) {
         ArrayList<Move> moveList = new ArrayList<>();
-        long NOT_A_MASK = 0xFEFEFEFEFEFEFEFEL;
-        long NOT_H_MASK = 0x7F7F7F7F7F7F7F7FL;
-        long NOT_AB_MASK = 0xFCFCFCFCFCFCFCFCL;
-        long NOT_GH_MASK = 0x3F3F3F3F3F3F3F3FL;
         long knights = board.isWhiteTurn() ? board.getBitboard(1) : board.getBitboard(7);
         long movable = board.isWhiteTurn() ? (board.getEmptySquares() | board.getBlackPieces())
                 : (board.getEmptySquares() | board.getWhitePieces());
 
         while (knights != 0) {
             int from = 63 - Long.numberOfTrailingZeros(knights);
-            long fromBitboard = 1L << Long.numberOfTrailingZeros(knights);
-            long moves = 0L;
-            moves |= (fromBitboard << 17) & NOT_A_MASK;
-            moves |= (fromBitboard << 15) & NOT_H_MASK;
-            moves |= (fromBitboard << 10) & NOT_AB_MASK;
-            moves |= (fromBitboard << 6) & NOT_GH_MASK;
-            moves |= (fromBitboard >>> 6) & NOT_AB_MASK;
-            moves |= (fromBitboard >>> 10) & NOT_GH_MASK;
-            moves |= (fromBitboard >>> 15) & NOT_A_MASK;
-            moves |= (fromBitboard >>> 17) & NOT_H_MASK;
-            moves &= movable;
+            long moves = RayLookup.KNIGHT_MOVES[from] & movable;
             moveList.addAll(getMoveList(moves, from, Move.NORMAL));
             knights &= knights - 1;
         }
