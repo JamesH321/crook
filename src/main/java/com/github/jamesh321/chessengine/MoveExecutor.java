@@ -104,32 +104,38 @@ public class MoveExecutor {
         int castlingRights = board.getCastlingRights();
         switch (fromPiece) {
             case 3:
-            case 9:
-                if (from / 8 == 0) {
-                    castlingRights &= from % 8 == 0 ? 0b0111 : 0b1011;
-                } else {
-                    castlingRights &= from % 8 == 0 ? 0b1101 : 0b1110;
-                }
-                break;
-            case 5:
-                castlingRights &= ~0b0011;
-                break;
-            case 11:
-                castlingRights &= ~0b1100;
-                break;
-        }
-        switch (toPiece) {
-            case 3:
-                if (to % 8 == 0) {
+                if (from == 56) {
                     castlingRights &= 0b1101;
-                } else if (to % 8 == 7) {
+                } else if (from == 63) {
                     castlingRights &= 0b1110;
                 }
                 break;
             case 9:
-                if (to % 8 == 0) {
+                if (from == 0) {
                     castlingRights &= 0b0111;
-                } else if (to % 8 == 7) {
+                } else if (from == 7) {
+                    castlingRights &= 0b1011;
+                }
+                break;
+            case 5:
+                castlingRights &= 0b1100;
+                break;
+            case 11:
+                castlingRights &= 0b0011;
+                break;
+        }
+        switch (toPiece) {
+            case 3:
+                if (to == 56) {
+                    castlingRights &= 0b1101;
+                } else if (to == 63) {
+                    castlingRights &= 0b1110;
+                }
+                break;
+            case 9:
+                if (to == 0) {
+                    castlingRights &= 0b0111;
+                } else if (to == 7) {
                     castlingRights &= 0b1011;
                 }
                 break;
