@@ -1,9 +1,12 @@
 package com.github.jamesh321.chessengine;
 
 public class LookupTables {
+    public static final long[] WHITE_PAWN_ATTACKS = new long[64];
+    public static final long[] BLACK_PAWN_ATTACKS = new long[64];
+    public static final long[] KNIGHT_MOVES = new long[64];
     public static final long[][] DIAGONAL_RAYS = new long[64][4];
     public static final long[][] STRAIGHT_RAYS = new long[64][4];
-    public static final long[] KNIGHT_MOVES = new long[64];
+    public static final long[] KING_MOVES = new long[64];
 
     public static final int N = 0;
     public static final int E = 1;
@@ -16,18 +19,59 @@ public class LookupTables {
     public static final int SW = 3;
 
     // File, rank
-    private static final int[][] DIAGONAL_DIRECTION = { { 1, -1 }, { -1, -1 }, { 1, 1 }, { -1, 1 } };
-    private static final int[][] STRAIGHT_DIRECTION = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
+    private static final int[][] WHITE_PAWN_DIRECTION = { { -1, -1 }, { 1, -1 } };
+    private static final int[][] BLACK_PAWN_DIRECTION = { { -1, 1 }, { 1, 1 } };
     private static final int[][] KNIGHT_DIRECTION = { { 2, 1 }, { 1, 2 }, { -1, 2 }, { -2, 1 }, { -2, -1 }, { -1, -2 },
             { 1, -2 }, { 2, -1 } };
+    private static final int[][] DIAGONAL_DIRECTION = { { 1, -1 }, { -1, -1 }, { 1, 1 }, { -1, 1 } };
+    private static final int[][] STRAIGHT_DIRECTION = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
+    private static final int[][] KING_DIRECTION = { { 0, -1 }, { 1, -1 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { -1, 1 },
+            { -1, 0 }, { -1, -1 } };
 
     static {
+        initializeWhitePawnMoves();
+        initializeBlackPawnMoves();
+        initializeKnightMoves();
         initializeDiagonal();
         initializeHorizontal();
-        initializeKnightAttacks();
+        initializeKingMoves();
     }
 
-    private static void initializeKnightAttacks() {
+    private static void initializeWhitePawnMoves() {
+        for (int square = 0; square < 64; square++) {
+            int file = square % 8;
+            int rank = square / 8;
+            long moves = 0L;
+            for (int direction = 0; direction < BLACK_PAWN_DIRECTION.length; direction++) {
+                int toFile = file + WHITE_PAWN_DIRECTION[direction][0];
+                int toRank = rank + WHITE_PAWN_DIRECTION[direction][1];
+                if (toFile < 0 || toFile > 7 || toRank < 0 || toRank > 7) {
+                    continue;
+                }
+                moves |= 1L << (63 - (toRank * 8 + toFile));
+            }
+            WHITE_PAWN_ATTACKS[square] = moves;
+        }
+    }
+
+    private static void initializeBlackPawnMoves() {
+        for (int square = 0; square < 64; square++) {
+            int file = square % 8;
+            int rank = square / 8;
+            long moves = 0L;
+            for (int direction = 0; direction < WHITE_PAWN_DIRECTION.length; direction++) {
+                int toFile = file + BLACK_PAWN_DIRECTION[direction][0];
+                int toRank = rank + BLACK_PAWN_DIRECTION[direction][1];
+                if (toFile < 0 || toFile > 7 || toRank < 0 || toRank > 7) {
+                    continue;
+                }
+                moves |= 1L << (63 - (toRank * 8 + toFile));
+            }
+            BLACK_PAWN_ATTACKS[square] = moves;
+        }
+    }
+
+    private static void initializeKnightMoves() {
         for (int square = 0; square < 64; square++) {
             int file = square % 8;
             int rank = square / 8;
@@ -41,6 +85,23 @@ public class LookupTables {
                 moves |= 1L << (63 - (toRank * 8 + toFile));
             }
             KNIGHT_MOVES[square] = moves;
+        }
+    }
+
+    private static void initializeKingMoves() {
+        for (int square = 0; square < 64; square++) {
+            int file = square % 8;
+            int rank = square / 8;
+            long moves = 0L;
+            for (int direction = 0; direction < KING_DIRECTION.length; direction++) {
+                int toFile = file + KING_DIRECTION[direction][0];
+                int toRank = rank + KING_DIRECTION[direction][1];
+                if (toFile < 0 || toFile > 7 || toRank < 0 || toRank > 7) {
+                    continue;
+                }
+                moves |= 1L << (63 - (toRank * 8 + toFile));
+            }
+            KING_MOVES[square] = moves;
         }
     }
 
@@ -90,9 +151,5 @@ public class LookupTables {
             ray |= 1L << (63 - (rank * 8 + file));
         }
         return ray;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(Long.toBinaryString(KNIGHT_MOVES[7]));
     }
 }
