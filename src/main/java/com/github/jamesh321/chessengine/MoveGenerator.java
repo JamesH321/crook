@@ -1,66 +1,169 @@
 package com.github.jamesh321.chessengine;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MoveGenerator {
     public static ArrayList<Move> generateLegalMoves(Board board) {
-        BoardState boardState = new BoardState(board);
         long kingBitboard = board.isWhiteTurn() ? board.getBitboard(5) : board.getBitboard(11);
         int kingSquare = kingBitboard != 0 ? 63 - Long.numberOfTrailingZeros(kingBitboard) : -1;
+        long kingAttackers = getAttackers(kingSquare, board);
+        boolean inCheck = kingAttackers != 0;
         ArrayList<Move> legalMoveList = new ArrayList<>();
+
         for (Move move : generatePseudoLegalMoves(board)) {
             if (move.getTo() == kingSquare) {
                 continue;
             }
-            MoveExecutor.makeMove(board, move);
+
             boolean isLegal = true;
-            long newKingBitboard = board.isWhiteTurn() ? board.getBitboard(11) : board.getBitboard(5);
-            int newKingSquare = newKingBitboard != 0 ? Long.numberOfLeadingZeros(newKingBitboard) : -1;
-            for (Move move2 : generatePseudoLegalMoves(board)) {
-                if (move2.getTo() == newKingSquare) {
+            if (move.getFrom() == kingSquare && isSquareAttacked(move.getTo(), board)) {
+                isLegal = false;
+            }
+
+            if (inCheck) {
+                if (move.getFlag() == Move.CASTLE) {
                     isLegal = false;
-                    break;
-                } else if (move.getFlag() == Move.CASTLE && !isLegalCastle(move, move2, board)) {
+                } else if (!attackerTaken(move, kingAttackers, board) && !checkBlocked(move, kingSquare, board)
+                        && move.getFrom() != kingSquare) {
+                    isLegal = false;
+                } else if (move.getFrom() != kingSquare && isPiecePinned(move, kingSquare, board)) {
+                    isLegal = false;
+                } else if (move.getFrom() == kingSquare && isSquareAttackedAfterMove(move, board)) {
+                    isLegal = false;
+                }
+            } else {
+                if (move.getFrom() != kingSquare && isPiecePinned(move, kingSquare, board)) {
+                    isLegal = false;
+                } else if (move.getFlag() == Move.CASTLE && !isLegalCastle(move, board)) {
                     isLegal = false;
                 }
             }
+
             if (isLegal) {
                 legalMoveList.add(move);
             }
-            board.restoreState(boardState);
         }
         return legalMoveList;
     }
 
-    private static boolean isLegalCastle(Move move, Move move2, Board board) {
-        int castleDirection = move.getTo() - move.getFrom();
-        if (castleDirection == 2 && move2.getTo() == move.getFrom() + 1) {
-            return false;
-        } else if (castleDirection == -2 && move2.getTo() == move.getFrom() - 1) {
-            return false;
-        } else if (move.getFrom() == move2.getTo()) {
-            return false;
-        } else if (isKingAttackedByPawn(board, move.getFrom())) {
-            return false;
-        }
-        return true;
+    private static boolean isSquareAttackedAfterMove(Move move, Board board) {
+        long occupied = board.getOccupiedSquares();
+        occupied &= ~(1L << (63 - move.getFrom()));
+        occupied |= 1L << (63 - move.getTo());
+        board.setOccupiedSquares(occupied);
+        boolean squareAttacked = isSquareAttacked(move.getTo(), board);
+        board.updateOccupiedSquares();
+        return squareAttacked;
     }
 
-    private static boolean isKingAttackedByPawn(Board board, int square) {
-        if (board.isWhiteTurn()) {
-            if ((board.getBitboard(0) & (1L << (63 - (square + 9)))) != 0) {
-                return true;
-            } else if ((board.getBitboard(0) & (1L << (63 - (square + 7)))) != 0) {
-                return true;
-            }
-        } else {
-            if ((board.getBitboard(6) & (1L << (63 - (square - 9)))) != 0) {
-                return true;
-            } else if ((board.getBitboard(6) & (1L << (63 - (square - 7)))) != 0) {
-                return true;
+    private static boolean checkBlocked(Move move, int kingSquare, Board board) {
+        long occupied = board.getOccupiedSquares();
+        occupied &= ~(1L << (63 - move.getFrom()));
+        occupied |= 1L << (63 - move.getTo());
+        board.setOccupiedSquares(occupied);
+        long attackers = getAttackers(kingSquare, board);
+
+        if (attackers == 0) {
+            board.updateOccupiedSquares();
+            return true;
+        }
+
+        board.updateOccupiedSquares();
+        return false;
+    }
+
+    private static boolean attackerTaken(Move move, long attackers, Board board) {
+        if (Long.bitCount(attackers) == 1) {
+            if (move.getFlag() != Move.EN_PASSANT) {
+                if (move.getTo() == Long.numberOfLeadingZeros(attackers)) {
+                    return true;
+                }
+            } else {
+                int takenPiecequare = board.isWhiteTurn() ? board.getEnPassantSquare() + 8
+                        : board.getEnPassantSquare() - 8;
+                if (takenPiecequare == Long.numberOfLeadingZeros(attackers)) {
+                    return true;
+                }
             }
         }
+
         return false;
+    }
+
+    public static long getAttackers(int square, Board board) {
+        long attackers = 0L;
+        long[] pieces = board.isWhiteTurn() ? Arrays.copyOfRange(board.getBitboards(), 6, 12)
+                : Arrays.copyOfRange(board.getBitboards(), 0, 6);
+        long occupied = board.getOccupiedSquares();
+
+        // Pawns
+        if (board.isWhiteTurn()) {
+            attackers |= LookupTables.WHITE_PAWN_ATTACKS[square] & pieces[0];
+        } else {
+            attackers |= LookupTables.BLACK_PAWN_ATTACKS[square] & pieces[0];
+        }
+
+        // Knights
+        attackers |= LookupTables.KNIGHT_MOVES[square] & pieces[1];
+
+        // Bishops
+        for (int direction = 0; direction < 4; direction++) {
+            attackers |= getRay(LookupTables.DIAGONAL_RAYS[square][direction], occupied, square) & pieces[2];
+        }
+
+        // Rooks
+        for (int direction = 0; direction < 4; direction++) {
+            attackers |= getRay(LookupTables.STRAIGHT_RAYS[square][direction], occupied, square) & pieces[3];
+        }
+
+        // Queens
+        for (int direction = 0; direction < 4; direction++) {
+            attackers |= getRay(LookupTables.STRAIGHT_RAYS[square][direction], occupied, square) & pieces[4];
+            attackers |= getRay(LookupTables.DIAGONAL_RAYS[square][direction], occupied, square) & pieces[4];
+
+        }
+
+        // King
+        attackers |= LookupTables.KING_MOVES[square] & pieces[5];
+
+        return attackers;
+    }
+
+    private static boolean isPiecePinned(Move move, int kingSquare, Board board) {
+        long occupied = board.getOccupiedSquares();
+        if (move.getFlag() == Move.EN_PASSANT) {
+            int takenPiecequare = board.isWhiteTurn() ? board.getEnPassantSquare() + 8 : board.getEnPassantSquare() - 8;
+            occupied &= ~(1L << (63 - takenPiecequare));
+        }
+        occupied &= ~(1L << (63 - move.getFrom()));
+        occupied |= 1L << (63 - move.getTo());
+
+        board.setOccupiedSquares(occupied);
+        long attackers = getAttackers(kingSquare, board);
+
+        if (attackers != 0 && !attackerTaken(move, attackers, board)) {
+            board.updateOccupiedSquares();
+            return true;
+        }
+
+        board.updateOccupiedSquares();
+        return false;
+    }
+
+    public static boolean isSquareAttacked(int square, Board board) {
+        return getAttackers(square, board) != 0;
+    }
+
+    private static boolean isLegalCastle(Move move, Board board) {
+        int castleDirection = move.getTo() - move.getFrom();
+        if (castleDirection == 2 && isSquareAttacked(move.getFrom() + 1, board)) {
+            return false;
+        } else if (castleDirection == -2 && isSquareAttacked(move.getFrom() - 1, board)) {
+            return false;
+        }
+
+        return true;
     }
 
     public static ArrayList<Move> generatePseudoLegalMoves(Board board) {
@@ -102,7 +205,7 @@ public class MoveGenerator {
 
         while (knights != 0) {
             int from = 63 - Long.numberOfTrailingZeros(knights);
-            long moves = RayLookup.KNIGHT_MOVES[from] & movable;
+            long moves = LookupTables.KNIGHT_MOVES[from] & movable;
             moveList.addAll(getMoveList(moves, from, Move.NORMAL));
             knights &= knights - 1;
         }
@@ -114,7 +217,7 @@ public class MoveGenerator {
         long ownPieces = board.isWhiteTurn() ? board.getWhitePieces() : board.getBlackPieces();
         long occupied = board.getOccupiedSquares();
 
-        return getSlidingMoves(RayLookup.DIAGONAL_RAYS, bishops, occupied, ownPieces, board);
+        return getSlidingMoves(LookupTables.DIAGONAL_RAYS, bishops, occupied, ownPieces, board);
     }
 
     public static ArrayList<Move> generateRookMoves(Board board) {
@@ -122,7 +225,7 @@ public class MoveGenerator {
         long ownPieces = board.isWhiteTurn() ? board.getWhitePieces() : board.getBlackPieces();
         long occupied = board.getOccupiedSquares();
 
-        return getSlidingMoves(RayLookup.STRAIGHT_RAYS, rooks, occupied, ownPieces, board);
+        return getSlidingMoves(LookupTables.STRAIGHT_RAYS, rooks, occupied, ownPieces, board);
     }
 
     public static ArrayList<Move> generateQueenMoves(Board board) {
@@ -131,8 +234,8 @@ public class MoveGenerator {
         long ownPieces = board.isWhiteTurn() ? board.getWhitePieces() : board.getBlackPieces();
         long occupied = board.getOccupiedSquares();
 
-        moveList.addAll(getSlidingMoves(RayLookup.STRAIGHT_RAYS, queens, occupied, ownPieces, board));
-        moveList.addAll(getSlidingMoves(RayLookup.DIAGONAL_RAYS, queens, occupied, ownPieces, board));
+        moveList.addAll(getSlidingMoves(LookupTables.STRAIGHT_RAYS, queens, occupied, ownPieces, board));
+        moveList.addAll(getSlidingMoves(LookupTables.DIAGONAL_RAYS, queens, occupied, ownPieces, board));
 
         return moveList;
     }
@@ -146,28 +249,10 @@ public class MoveGenerator {
         int from = 63 - Long.numberOfTrailingZeros(king);
         int castlingRights = board.isWhiteTurn() ? board.getCastlingRights() & 0b11 : board.getCastlingRights() >> 2;
 
-        moveList.addAll(getMoveList(getKingMask(king, movable), from, Move.NORMAL));
+        moveList.addAll(getMoveList(LookupTables.KING_MOVES[from] & movable, from, Move.NORMAL));
         moveList.addAll(getMoveList(getcastleMoves(king, empty, from, castlingRights), from, Move.CASTLE));
 
         return moveList;
-    }
-
-    private static long getKingMask(long king, long movable) {
-        long NOT_A_MASK = 0x7F7F7F7F7F7F7F7FL;
-        long NOT_H_MASK = 0xFEFEFEFEFEFEFEFEL;
-        long fromBitboard = 1L << Long.numberOfTrailingZeros(king);
-        long moves = 0L;
-
-        moves |= (fromBitboard << 1) & NOT_H_MASK;
-        moves |= (fromBitboard >>> 1) & NOT_A_MASK;
-        moves |= (fromBitboard << 9) & NOT_H_MASK;
-        moves |= (fromBitboard >>> 7) & NOT_H_MASK;
-        moves |= (fromBitboard << 8);
-        moves |= (fromBitboard >>> 8);
-        moves |= (fromBitboard << 7) & NOT_A_MASK;
-        moves |= (fromBitboard >>> 9) & NOT_A_MASK;
-
-        return moves & movable;
     }
 
     private static long getcastleMoves(long king, long empty, int from, int castlingRights) {
