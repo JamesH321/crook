@@ -129,6 +129,10 @@ public class Board {
         return occupiedSquares;
     }
 
+    public void setOccupiedSquares(long occupiedSquares) {
+        this.occupiedSquares = occupiedSquares;
+    }
+
     public void updateEmptySquares() {
         this.emptySquares = ~occupiedSquares;
     }
