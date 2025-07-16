@@ -5,8 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MoveExecutorTest {
-
-    private Board board;
+    Board board;
 
     @BeforeEach
     void setUp() {
@@ -14,87 +13,100 @@ public class MoveExecutorTest {
     }
 
     @Test
-    void movePiece_shouldMovePieceToCorrectSquare() {
-        MoveExecutor.movePiece(board, 0, 0x100L, 0x1000000L);
-        assertEquals(0x100FE00L, board.getBitboard(0));
+    void testNormalMove() {
+        Move move = new Move(55, 39, Move.NORMAL);
+        MoveExecutor.makeMove(board, move);
+        assertEquals(0, board.getPieceAtSquare(39));
+        assertEquals(-1, board.getPieceAtSquare(55));
     }
 
     @Test
-    void takePiece_shouldRemoveCorrectPiece() {
-        MoveExecutor.takePiece(board, 0, 0x100L);
-        assertEquals(0xFE00L, board.getBitboard(0));
+    void testTakePiece() {
+        board.setBitboard(6, board.getBitboard(6) | (1L >>> 63 - 36));
+        Move move = new Move(51, 36, Move.NORMAL);
+        MoveExecutor.makeMove(board, move);
+        assertEquals(0, board.getPieceAtSquare(36));
+        assertEquals(-1, board.getPieceAtSquare(51));
+        assertFalse((board.getBitboard(6) & (1L >>> 63 - 36)) != 0);
     }
 
     @Test
-    void getPieceIndex_shouldReturnCorrectIndex() {
-        assertEquals(3, MoveExecutor.getPieceIndex(1, true));
-        assertEquals(9, MoveExecutor.getPieceIndex(1, false));
+    void testPromotion() {
+        board.setBitboard(0, 1L >>> 63 - 8);
+        Move move = new Move(8, 0, Move.ROOK_PROMOTION);
+        MoveExecutor.makeMove(board, move);
+        assertEquals(3, board.getPieceAtSquare(0));
+        assertEquals(-1, board.getPieceAtSquare(8));
     }
 
     @Test
-    void takeEnPassantPiece_shouldRemoveCorrectPawn() {
-        MoveExecutor.takeEnPassantPiece(board, 1L << 63);
-        assertEquals(0b01111111L << 48, board.getBitboard(6));
+    void testEnPassant() {
+        Move move1 = new Move(55, 31, Move.NORMAL);
+        MoveExecutor.makeMove(board, move1);
+        board.setWhiteTurn(false);
+        Move move2 = new Move(14, 30, Move.NORMAL);
+        MoveExecutor.makeMove(board, move2);
+        board.setWhiteTurn(true);
+        Move move3 = new Move(31, 22, Move.EN_PASSANT);
+        MoveExecutor.makeMove(board, move3);
+        assertEquals(0, board.getPieceAtSquare(22));
+        assertEquals(-1, board.getPieceAtSquare(30));
     }
 
     @Test
-    void castle_shouldMoveKingAndRookCorrectlyOnKingside() {
-        MoveExecutor.castle(board, 62, 5, 0b1000, 0b0010);
-        assertEquals(0b10, board.getBitboard(5));
-        assertEquals(0b10000100, board.getBitboard(3));
+    void testCastlingKingside() {
+        Move move1 = new Move(61, 45, Move.NORMAL);
+        MoveExecutor.makeMove(board, move1);
+        Move move2 = new Move(62, 46, Move.NORMAL);
+        MoveExecutor.makeMove(board, move2);
+        Move move3 = new Move(60, 62, Move.CASTLE);
+        MoveExecutor.makeMove(board, move3);
+        assertEquals(5, board.getPieceAtSquare(62));
+        assertEquals(3, board.getPieceAtSquare(61));
+        assertEquals(-1, board.getPieceAtSquare(60));
+        assertEquals(-1, board.getPieceAtSquare(63));
+        assertEquals(0b1100, board.getCastlingRights());
     }
 
     @Test
-    void castle_shouldMoveKingAndRookCorrectlyOnQueenside() {
-        MoveExecutor.castle(board, 58, 5, 0b1000, 0b00100000);
-        assertEquals(0b00100000, board.getBitboard(5));
-        assertEquals(0b00010001, board.getBitboard(3));
+    void testCastlingQueenside() {
+        Move move1 = new Move(59, 45, Move.NORMAL);
+        MoveExecutor.makeMove(board, move1);
+        board.setWhiteTurn(true);
+        Move move2 = new Move(58, 46, Move.NORMAL);
+        MoveExecutor.makeMove(board, move2);
+        board.setWhiteTurn(true);
+        Move move3 = new Move(57, 47, Move.NORMAL);
+        MoveExecutor.makeMove(board, move3);
+        board.setWhiteTurn(true);
+        Move move4 = new Move(60, 58, Move.CASTLE);
+        MoveExecutor.makeMove(board, move4);
+        board.setWhiteTurn(true);
+        assertEquals(5, board.getPieceAtSquare(58));
+        assertEquals(3, board.getPieceAtSquare(59));
+        assertEquals(-1, board.getPieceAtSquare(60));
+        assertEquals(-1, board.getPieceAtSquare(56));
+        assertEquals(0b1100, board.getCastlingRights());
     }
 
     @Test
-    void setEnPassantSquare_shouldSetWhenWhitePawnMovesTwoSquares() {
-        MoveExecutor.setEnPassantSquare(board, 0, 55, 39);
-        assertEquals(47, board.getEnPassantSquare());
-    }
-
-    @Test
-    void setEnPassantSquare_shouldSetWhenBlackPawnMovesTwoSquares() {
-        MoveExecutor.setEnPassantSquare(board, 0, 15, 31);
-        assertEquals(23, board.getEnPassantSquare());
-    }
-
-    @Test
-    void setEnPassantSquare_shouldClearWhenNoEnPassantPossible() {
-        MoveExecutor.setEnPassantSquare(board, 0, 15, 23);
-        assertEquals(-1, board.getEnPassantSquare());
-    }
-
-    @Test
-    void setCastlingRights_shouldUpdateCastlingRightsWhenKingMoved() {
-        MoveExecutor.setCastlingRights(board, 11, 4);
-        assertEquals(0b0011, board.getCastlingRights());
-    }
-
-    @Test
-    void setCastlingRights_shouldUpdateCastlingRightsWhenRookMoved() {
-        MoveExecutor.setCastlingRights(board, 9, 0);
-        assertEquals(0b0111, board.getCastlingRights());
-    }
-
-    @Test
-    void makeMove_shouldDoNormalMoveCorrectly() {
-        MoveExecutor.makeMove(board, 0b0000_100100_110100); // from 52, to 36
-        assertEquals(0x800F700L, board.getBitboard(0));
-        assertEquals(0b1111, board.getCastlingRights());
+    void testSetEnPassantSquare() {
+        Move move = new Move(52, 36, 0);
+        MoveExecutor.makeMove(board, move);
         assertEquals(44, board.getEnPassantSquare());
     }
 
     @Test
-    void makeMove_shouldDoQueenPromotionMoveCorrectly() {
-        MoveExecutor.makeMove(board, 0b0001_000111_110111);
-        assertEquals(0b11111110 << 8, board.getBitboard(0));
-        assertEquals(0x100000000000010L, board.getBitboard(4));
-        assertEquals(0b1111, board.getCastlingRights());
-        assertEquals(-1, board.getEnPassantSquare());
+    void testSetCastlingRightsKingMove() {
+        Move move = new Move(60, 61, 0);
+        MoveExecutor.makeMove(board, move);
+        assertEquals(0b1100, board.getCastlingRights());
+    }
+
+    @Test
+    void testSetCastlingRightsRookMove() {
+        Move move = new Move(63, 39, 0);
+        MoveExecutor.makeMove(board, move);
+        assertEquals(0b1110, board.getCastlingRights());
     }
 }
