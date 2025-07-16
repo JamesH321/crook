@@ -1,6 +1,28 @@
 package com.github.jamesh321.chessengine;
 
+/**
+ * Provides static methods to execute chess moves on a {@link Board} object.
+ * <p>
+ * The MoveExecutor class handles all aspects of move execution, including:
+ * <ul>
+ * <li>Moving pieces between squares</li>
+ * <li>Capturing pieces</li>
+ * <li>Handling special moves such as castling, en passant, and promotions</li>
+ * <li>Updating castling rights, en passant squares, halfmove clock, and
+ * fullmove counter</li>
+ * <li>Maintaining board state consistency after each move</li>
+ * </ul>
+ * All methods are static and operate directly on the provided {@link Board}
+ * instance.
+ */
 public class MoveExecutor {
+
+    /**
+     * Executes the provided move. Handles special moves and updates game rules.
+     *
+     * @param board the board on which to make the move
+     * @param move  the move to execute
+     */
     public static void makeMove(Board board, Move move) {
         int from = move.getFrom();
         int to = move.getTo();
@@ -37,11 +59,28 @@ public class MoveExecutor {
         board.setWhiteTurn(!board.isWhiteTurn());
     }
 
+    /**
+     * Adds the piece to the bitboard on the square it moves to and removes it from
+     * the square it was on.
+     *
+     * @param board     the board on which to make the move
+     * @param fromPiece the piece being moved
+     * @param fromMask  the bitboard mask for the square the piece was on
+     * @param toMask    the bitboard mask for the square the piece is moving to
+     */
     public static void movePiece(Board board, int fromPiece, long fromMask, long toMask) {
         long newBitboard = (board.getBitboard(fromPiece) & ~fromMask) | toMask;
         board.setBitboard(fromPiece, newBitboard);
     }
 
+    /**
+     * Removes a piece from its bitboard if the piece being moved lands on its
+     * square.
+     *
+     * @param board   the board on which the piece is being captured
+     * @param toPiece the piece being captured
+     * @param toMask  the bitboard mask for the piece being captured
+     */
     public static void takePiece(Board board, int toPiece, long toMask) {
         if (toPiece > -1) {
             long newBitboard = board.getBitboard(toPiece) & ~toMask;
@@ -49,6 +88,13 @@ public class MoveExecutor {
         }
     }
 
+    /**
+     * Gets the index of the piece to which a pawn is being promoted.
+     *
+     * @param promotionPiece the piece specified in the move to promote to
+     * @param whiteTurn      true if it is white's turn, false if it is black's
+     * @return the index of the piece being promoted to
+     */
     public static int getPieceIndex(int promotionPiece, boolean whiteTurn) {
         int pieceIndex = 4 - promotionPiece;
         if (!whiteTurn) {
@@ -57,6 +103,12 @@ public class MoveExecutor {
         return pieceIndex;
     }
 
+    /**
+     * Removes a pawn from its bitboard when performing an en passant capture.
+     *
+     * @param board  the board on which the pawn is being captured
+     * @param toMask the bitboard mask for the piece being captured
+     */
     public static void takeEnPassantPiece(Board board, long toMask) {
         int toPiece;
         if (board.isWhiteTurn()) {
@@ -69,6 +121,16 @@ public class MoveExecutor {
         takePiece(board, toPiece, toMask);
     }
 
+    /**
+     * Moves the king and rook to the correct positions when a castling move is
+     * made.
+     *
+     * @param board     the board on which castling is performed
+     * @param to        the square to which the king is moving
+     * @param fromPiece the index of the king piece
+     * @param fromMask  the bitboard mask for the square the king is moving from
+     * @param toMask    the bitboard mask for the square the king is moving to
+     */
     public static void castle(Board board, int to, int fromPiece, long fromMask, long toMask) {
         int rook = 3;
         if (!board.isWhiteTurn()) {
@@ -89,6 +151,14 @@ public class MoveExecutor {
         }
     }
 
+    /**
+     * Sets the en passant square if a double pawn push is made.
+     *
+     * @param board     the board on which the en passant square is set
+     * @param fromPiece the piece being moved
+     * @param from      the square from which the piece is being moved
+     * @param to        the square to which the piece is being moved
+     */
     public static void setEnPassantSquare(Board board, int fromPiece, int from, int to) {
         int enPassantSquare = -1;
 
@@ -100,6 +170,15 @@ public class MoveExecutor {
         board.setEnPassantSquare(enPassantSquare);
     }
 
+    /**
+     * Updates castling rights if the king or rook is moved or captured.
+     *
+     * @param board     the board on which castling rights are set
+     * @param fromPiece the piece being moved
+     * @param toPiece   the piece on the destination square
+     * @param from      the square from which the move is made
+     * @param to        the square to which the move is made
+     */
     public static void setCastlingRights(Board board, int fromPiece, int toPiece, int from, int to) {
         int castlingRights = board.getCastlingRights();
         switch (fromPiece) {
@@ -143,6 +222,14 @@ public class MoveExecutor {
         board.setCastlingRights(castlingRights);
     }
 
+    /**
+     * Increments the halfmove clock whenever a pawn move or capture is not made.
+     * Resets it to 0 whenever a pawn move or capture is made.
+     *
+     * @param board     the board on which the halfmove clock is set
+     * @param fromPiece the piece being moved
+     * @param toPiece   the piece on the destination square
+     */
     public static void setHalfmoveClock(Board board, int fromPiece, int toPiece) {
         if (fromPiece == 0 || fromPiece == 6 || toPiece != -1) {
             board.setHalfmoveClock(0);
@@ -151,6 +238,11 @@ public class MoveExecutor {
         }
     }
 
+    /**
+     * Increments the fullmove counter after black's move.
+     *
+     * @param board the board on which the fullmove counter is set
+     */
     public static void incrementFullmoveCounter(Board board) {
         if (!board.isWhiteTurn()) {
             board.setFullmoveNumber(board.getFullmoveNumber() + 1);
