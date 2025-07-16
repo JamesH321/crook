@@ -1,5 +1,11 @@
 package com.github.jamesh321.chessengine;
 
+/**
+ * Represents the state of a board.
+ * Used to save a board position so that it can be restored later when undoing
+ * moves.
+ * Doesn't save unnecessary information from a board like composite bitboards.
+ */
 public class BoardState {
     private long[] bitboards;
     private boolean whiteTurn;
@@ -8,6 +14,11 @@ public class BoardState {
     private int halfmoveClock;
     private int fullmoveCounter;
 
+    /**
+     * Copies the essential information from a board to save a position.
+     * 
+     * @param board the board to copy the state from
+     */
     BoardState(Board board) {
         this.bitboards = board.getBitboards().clone();
         this.whiteTurn = board.isWhiteTurn();
