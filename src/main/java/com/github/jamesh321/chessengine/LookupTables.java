@@ -1,12 +1,16 @@
 package com.github.jamesh321.chessengine;
 
+/**
+ * Generates and stores tables for each piece that contain all the possible
+ * moves from every square.
+ */
 public class LookupTables {
     public static final long[] WHITE_PAWN_ATTACKS = new long[64];
     public static final long[] BLACK_PAWN_ATTACKS = new long[64];
     public static final long[] KNIGHT_MOVES = new long[64];
+    public static final long[] KING_MOVES = new long[64];
     public static final long[][] DIAGONAL_RAYS = new long[64][4];
     public static final long[][] STRAIGHT_RAYS = new long[64][4];
-    public static final long[] KING_MOVES = new long[64];
 
     public static final int N = 0;
     public static final int E = 1;
@@ -23,10 +27,10 @@ public class LookupTables {
     private static final int[][] BLACK_PAWN_DIRECTION = { { -1, 1 }, { 1, 1 } };
     private static final int[][] KNIGHT_DIRECTION = { { 2, 1 }, { 1, 2 }, { -1, 2 }, { -2, 1 }, { -2, -1 }, { -1, -2 },
             { 1, -2 }, { 2, -1 } };
-    private static final int[][] DIAGONAL_DIRECTION = { { 1, -1 }, { -1, -1 }, { 1, 1 }, { -1, 1 } };
-    private static final int[][] STRAIGHT_DIRECTION = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
     private static final int[][] KING_DIRECTION = { { 0, -1 }, { 1, -1 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { -1, 1 },
             { -1, 0 }, { -1, -1 } };
+    private static final int[][] DIAGONAL_DIRECTION = { { 1, -1 }, { -1, -1 }, { 1, 1 }, { -1, 1 } };
+    private static final int[][] STRAIGHT_DIRECTION = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
 
     static {
         initializeWhitePawnMoves();
@@ -37,114 +41,105 @@ public class LookupTables {
         initializeKingMoves();
     }
 
+    /**
+     * Initializes the lookup table for white pawn attack moves from every square.
+     */
     private static void initializeWhitePawnMoves() {
         for (int square = 0; square < 64; square++) {
-            int file = square % 8;
-            int rank = square / 8;
-            long moves = 0L;
-            for (int direction = 0; direction < BLACK_PAWN_DIRECTION.length; direction++) {
-                int toFile = file + WHITE_PAWN_DIRECTION[direction][0];
-                int toRank = rank + WHITE_PAWN_DIRECTION[direction][1];
-                if (toFile < 0 || toFile > 7 || toRank < 0 || toRank > 7) {
-                    continue;
-                }
-                moves |= 1L << (63 - (toRank * 8 + toFile));
-            }
-            WHITE_PAWN_ATTACKS[square] = moves;
+            WHITE_PAWN_ATTACKS[square] = generateMovesForDirections(square, WHITE_PAWN_DIRECTION);
         }
     }
 
+    /**
+     * Initializes the lookup table for black pawn attack moves from every square.
+     */
     private static void initializeBlackPawnMoves() {
         for (int square = 0; square < 64; square++) {
-            int file = square % 8;
-            int rank = square / 8;
-            long moves = 0L;
-            for (int direction = 0; direction < WHITE_PAWN_DIRECTION.length; direction++) {
-                int toFile = file + BLACK_PAWN_DIRECTION[direction][0];
-                int toRank = rank + BLACK_PAWN_DIRECTION[direction][1];
-                if (toFile < 0 || toFile > 7 || toRank < 0 || toRank > 7) {
-                    continue;
-                }
-                moves |= 1L << (63 - (toRank * 8 + toFile));
-            }
-            BLACK_PAWN_ATTACKS[square] = moves;
+            BLACK_PAWN_ATTACKS[square] = generateMovesForDirections(square, BLACK_PAWN_DIRECTION);
         }
     }
 
+    /**
+     * Initializes the lookup table for knight moves from every square.
+     */
     private static void initializeKnightMoves() {
         for (int square = 0; square < 64; square++) {
-            int file = square % 8;
-            int rank = square / 8;
-            long moves = 0L;
-            for (int direction = 0; direction < KNIGHT_DIRECTION.length; direction++) {
-                int toFile = file + KNIGHT_DIRECTION[direction][0];
-                int toRank = rank + KNIGHT_DIRECTION[direction][1];
-                if (toFile < 0 || toFile > 7 || toRank < 0 || toRank > 7) {
-                    continue;
-                }
-                moves |= 1L << (63 - (toRank * 8 + toFile));
-            }
-            KNIGHT_MOVES[square] = moves;
+            KNIGHT_MOVES[square] = generateMovesForDirections(square, KNIGHT_DIRECTION);
         }
     }
 
+    /**
+     * Initializes the lookup table for king moves from every square.
+     */
     private static void initializeKingMoves() {
         for (int square = 0; square < 64; square++) {
-            int file = square % 8;
-            int rank = square / 8;
-            long moves = 0L;
-            for (int direction = 0; direction < KING_DIRECTION.length; direction++) {
-                int toFile = file + KING_DIRECTION[direction][0];
-                int toRank = rank + KING_DIRECTION[direction][1];
-                if (toFile < 0 || toFile > 7 || toRank < 0 || toRank > 7) {
-                    continue;
-                }
-                moves |= 1L << (63 - (toRank * 8 + toFile));
-            }
-            KING_MOVES[square] = moves;
+            KING_MOVES[square] = generateMovesForDirections(square, KING_DIRECTION);
         }
     }
 
+    /**
+     * Initializes the lookup tables for diagonal rays (bishop and queen moves) from
+     * every square in all four diagonal directions.
+     */
     private static void initializeDiagonal() {
         for (int square = 0; square < 64; square++) {
-            DIAGONAL_RAYS[square][NE] = generateDiagonalRay(square, NE);
-            DIAGONAL_RAYS[square][NW] = generateDiagonalRay(square, NW);
-            DIAGONAL_RAYS[square][SE] = generateDiagonalRay(square, SE);
-            DIAGONAL_RAYS[square][SW] = generateDiagonalRay(square, SW);
+            DIAGONAL_RAYS[square][NE] = generateRay(square, NE, DIAGONAL_DIRECTION);
+            DIAGONAL_RAYS[square][NW] = generateRay(square, NW, DIAGONAL_DIRECTION);
+            DIAGONAL_RAYS[square][SE] = generateRay(square, SE, DIAGONAL_DIRECTION);
+            DIAGONAL_RAYS[square][SW] = generateRay(square, SW, DIAGONAL_DIRECTION);
         }
     }
 
-    private static long generateDiagonalRay(int square, int direction) {
-        int file = square % 8;
-        int rank = square / 8;
-        long ray = 0L;
-        while (true) {
-            file += DIAGONAL_DIRECTION[direction][0];
-            rank += DIAGONAL_DIRECTION[direction][1];
-            if (file < 0 || file > 7 || rank < 0 || rank > 7) {
-                break;
-            }
-            ray |= 1L << (63 - (rank * 8 + file));
-        }
-        return ray;
-    }
-
+    /**
+     * Initializes the lookup tables for straight rays (rook and queen moves) from
+     * every square in all four straight directions.
+     */
     private static void initializeHorizontal() {
         for (int square = 0; square < 64; square++) {
-            STRAIGHT_RAYS[square][N] = generateStraightRay(square, N);
-            STRAIGHT_RAYS[square][E] = generateStraightRay(square, E);
-            STRAIGHT_RAYS[square][S] = generateStraightRay(square, S);
-            STRAIGHT_RAYS[square][W] = generateStraightRay(square, W);
+            STRAIGHT_RAYS[square][N] = generateRay(square, N, STRAIGHT_DIRECTION);
+            STRAIGHT_RAYS[square][E] = generateRay(square, E, STRAIGHT_DIRECTION);
+            STRAIGHT_RAYS[square][S] = generateRay(square, S, STRAIGHT_DIRECTION);
+            STRAIGHT_RAYS[square][W] = generateRay(square, W, STRAIGHT_DIRECTION);
         }
     }
 
-    private static long generateStraightRay(int square, int direction) {
+    /**
+     * Generates all of the moves for a piece based in a given direction.
+     * 
+     * @param square     the square the moves are from
+     * @param directions 2d array with the directions of each possible move
+     * @return bitboard with all of the possible moves from the given square
+     */
+    private static long generateMovesForDirections(int square, int[][] directions) {
+        int file = square % 8;
+        int rank = square / 8;
+        long moves = 0L;
+        for (int direction = 0; direction < directions.length; direction++) {
+            int toFile = file + directions[direction][0];
+            int toRank = rank + directions[direction][1];
+            if (toFile < 0 || toFile > 7 || toRank < 0 || toRank > 7) {
+                continue;
+            }
+            moves |= 1L << (63 - (toRank * 8 + toFile));
+        }
+        return moves;
+    }
+
+    /**
+     * Generates a ray of moves in a given direction.
+     * 
+     * @param square         the square the moves are from
+     * @param direction      the direction the ray is in
+     * @param directionArray 2d array with the directions of each possible move
+     * @return bitboard with all of the possible moves from the given square
+     */
+    private static long generateRay(int square, int direction, int[][] directionArray) {
         int file = square % 8;
         int rank = square / 8;
         long ray = 0L;
         while (true) {
-            file += STRAIGHT_DIRECTION[direction][0];
-            rank += STRAIGHT_DIRECTION[direction][1];
+            file += directionArray[direction][0];
+            rank += directionArray[direction][1];
             if (file < 0 || file > 7 || rank < 0 || rank > 7) {
                 break;
             }
