@@ -28,8 +28,8 @@ public class MoveExecutor {
         int to = move.getTo();
         long fromMask = 0x8000000000000000L >>> from;
         long toMask = 0x8000000000000000L >>> to;
-        int fromPiece = board.getPieceAtSquare(from);
-        int toPiece = board.getPieceAtSquare(to);
+        int fromPiece = board.getPieceIndexAtSquare(from);
+        int toPiece = board.getPieceIndexAtSquare(to);
 
         switch (move.getSpecialMove()) {
             case 0: // None

@@ -30,7 +30,7 @@ public class Display {
         for (int square = 0; square < 64; square++) {
             int file = square % 8;
             int rank = 8 - (square / 8);
-            int pieceIndex = board.getPieceAtSquare(square);
+            int pieceIndex = board.getPieceIndexAtSquare(square);
 
             if (file == 0) {
                 boardString += String.format("%d   |", rank);
