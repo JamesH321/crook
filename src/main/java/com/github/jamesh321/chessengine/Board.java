@@ -23,21 +23,20 @@ public class Board {
      * Initialises the board and game rules to the standard starting position.
      */
     public Board() {
-        // White pieces
-        bitboards[0] = 0x000000000000FF00L; // Pawns
-        bitboards[1] = 0x0000000000000042L; // Knights
-        bitboards[2] = 0x0000000000000024L; // Bishops
-        bitboards[3] = 0x0000000000000081L; // Rooks
-        bitboards[4] = 0x0000000000000010L; // Queens
-        bitboards[5] = 0x0000000000000008L; // Kings
 
-        // Black pieces
-        bitboards[6] = 0x00FF000000000000L; // Pawns
-        bitboards[7] = 0x4200000000000000L; // Knights
-        bitboards[8] = 0x2400000000000000L; // Bishops
-        bitboards[9] = 0x8100000000000000L; // Rooks
-        bitboards[10] = 0x1000000000000000L; // Queens
-        bitboards[11] = 0x0800000000000000L; // Kings
+        bitboards[Piece.WHITE_PAWN.getIndex()] = 0x000000000000FF00L;
+        bitboards[Piece.WHITE_KNIGHT.getIndex()] = 0x0000000000000042L;
+        bitboards[Piece.WHITE_BISHOP.getIndex()] = 0x0000000000000024L;
+        bitboards[Piece.WHITE_ROOK.getIndex()] = 0x0000000000000081L;
+        bitboards[Piece.WHITE_QUEEN.getIndex()] = 0x0000000000000010L;
+        bitboards[Piece.WHITE_KING.getIndex()] = 0x0000000000000008L;
+
+        bitboards[Piece.BLACK_PAWN.getIndex()] = 0x00FF000000000000L;
+        bitboards[Piece.BLACK_KNIGHT.getIndex()] = 0x4200000000000000L;
+        bitboards[Piece.BLACK_BISHOP.getIndex()] = 0x2400000000000000L;
+        bitboards[Piece.BLACK_ROOK.getIndex()] = 0x8100000000000000L;
+        bitboards[Piece.BLACK_QUEEN.getIndex()] = 0x1000000000000000L;
+        bitboards[Piece.BLACK_KING.getIndex()] = 0x0800000000000000L;
 
         whiteTurn = true;
         castlingRights = 0b1111; // BQ, BK, WQ, WK
@@ -179,7 +178,7 @@ public class Board {
      * @return the index in the bitboards array of the piece at that square, or -1
      *         if the square is empty
      */
-    public int getPieceAtSquare(int square) {
+    public int getPieceIndexAtSquare(int square) {
         long piecePosition = 1L << 63 - square;
         for (int i = 0; i < 12; i++) {
             if ((piecePosition & bitboards[i]) != 0) {
