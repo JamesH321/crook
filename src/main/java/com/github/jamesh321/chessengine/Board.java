@@ -178,15 +178,15 @@ public class Board {
      * @return the index in the bitboards array of the piece at that square, or -1
      *         if the square is empty
      */
-    public int getPieceIndexAtSquare(int square) {
-        long piecePosition = 1L << 63 - square;
-        for (int i = 0; i < 12; i++) {
-            if ((piecePosition & bitboards[i]) != 0) {
-                return i;
+    public Piece getPieceAtSquare(int square) {
+        long boardSquare = 1L << 63 - square;
+        for (Piece piece : Piece.values()) {
+            if ((boardSquare & bitboards[piece.getIndex()]) != 0) {
+                return piece;
             }
         }
         // Empty square
-        return -1;
+        return null;
     }
 
     /**
