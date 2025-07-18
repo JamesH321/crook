@@ -68,7 +68,12 @@ public class Fen {
         for (int rank = 0; rank < 8; rank++) {
             for (int j = 0; j < ranks[rank].length(); j++) {
 
-                Piece piece = Piece.fromIndex(PIECES.indexOf(ranks[rank].charAt(j)));
+                Piece piece;
+                try {
+                    piece = Piece.fromIndex(PIECES.indexOf(ranks[rank].charAt(j)));
+                } catch (IllegalArgumentException e) {
+                    piece = null;
+                }
 
                 if (piece != null) {
                     board.setBitboard(piece, board.getBitboard(piece) | 1L << (63 - square));
