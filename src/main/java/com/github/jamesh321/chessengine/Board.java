@@ -55,12 +55,12 @@ public class Board {
         this.bitboards = bitboards;
     }
 
-    public long getBitboard(int piece) {
-        return bitboards[piece];
+    public long getBitboard(Piece piece) {
+        return bitboards[piece.getIndex()];
     }
 
-    public void setBitboard(int piece, long bitboard) {
-        this.bitboards[piece] = bitboard;
+    public void setBitboard(Piece piece, long bitboard) {
+        this.bitboards[piece.getIndex()] = bitboard;
     }
 
     public boolean isWhiteTurn() {
