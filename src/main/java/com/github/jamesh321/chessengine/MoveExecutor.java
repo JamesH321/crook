@@ -97,14 +97,14 @@ public class MoveExecutor {
      * @param whiteTurn      true if it is white's turn, false if it is black's
      * @return the index of the piece being promoted to
      */
-    public static Piece getPromotionPiece(int promotionPiece, boolean whiteTurn) {
-        int pieceIndex = 4 - promotionPiece;
+    public static Piece getPromotionPiece(int promotionPiece, boolean isWhiteTurn) {
+        int pieceIndex = isWhiteTurn ? 4 - promotionPiece : 10 - promotionPiece;
 
-        if (!whiteTurn) {
-            pieceIndex += 6;
+        try {
+            return Piece.fromIndex(pieceIndex);
+        } catch (Exception e) {
+            return null;
         }
-
-        return Piece.fromIndex(pieceIndex);
     }
 
     /**
@@ -187,48 +187,52 @@ public class MoveExecutor {
     public static void setCastlingRights(Board board, Piece fromPiece, Piece toPiece, int from, int to) {
         int castlingRights = board.getCastlingRights();
 
-        switch (fromPiece) {
-            case WHITE_ROOK:
-                if (from == 56) {
-                    castlingRights &= 0b1101;
-                } else if (from == 63) {
-                    castlingRights &= 0b1110;
-                }
-                break;
-            case BLACK_ROOK:
-                if (from == 0) {
-                    castlingRights &= 0b0111;
-                } else if (from == 7) {
-                    castlingRights &= 0b1011;
-                }
-                break;
-            case WHITE_KING:
-                castlingRights &= 0b1100;
-                break;
-            case BLACK_KING:
-                castlingRights &= 0b0011;
-                break;
-            default:
-                break;
+        if (fromPiece != null) {
+            switch (fromPiece) {
+                case WHITE_ROOK:
+                    if (from == 56) {
+                        castlingRights &= 0b1101;
+                    } else if (from == 63) {
+                        castlingRights &= 0b1110;
+                    }
+                    break;
+                case BLACK_ROOK:
+                    if (from == 0) {
+                        castlingRights &= 0b0111;
+                    } else if (from == 7) {
+                        castlingRights &= 0b1011;
+                    }
+                    break;
+                case WHITE_KING:
+                    castlingRights &= 0b1100;
+                    break;
+                case BLACK_KING:
+                    castlingRights &= 0b0011;
+                    break;
+                default:
+                    break;
+            }
         }
 
-        switch (toPiece) {
-            case WHITE_ROOK:
-                if (to == 56) {
-                    castlingRights &= 0b1101;
-                } else if (to == 63) {
-                    castlingRights &= 0b1110;
-                }
-                break;
-            case BLACK_ROOK:
-                if (to == 0) {
-                    castlingRights &= 0b0111;
-                } else if (to == 7) {
-                    castlingRights &= 0b1011;
-                }
-                break;
-            default:
-                break;
+        if (toPiece != null) {
+            switch (toPiece) {
+                case WHITE_ROOK:
+                    if (to == 56) {
+                        castlingRights &= 0b1101;
+                    } else if (to == 63) {
+                        castlingRights &= 0b1110;
+                    }
+                    break;
+                case BLACK_ROOK:
+                    if (to == 0) {
+                        castlingRights &= 0b0111;
+                    } else if (to == 7) {
+                        castlingRights &= 0b1011;
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
 
         board.setCastlingRights(castlingRights);
