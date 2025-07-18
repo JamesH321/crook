@@ -59,16 +59,18 @@ public class Fen {
         String[] ranks = boardPosition.split("/");
 
         // Clear board
-        for (int i = 0; i < 12; i++) {
-            board.setBitboard(i, 0L);
+        for (Piece piece : Piece.values()) {
+            board.setBitboard(piece, 0L);
         }
 
         // Iterate over squares in each rank and load pieces to square
         int square = 0;
         for (int rank = 0; rank < 8; rank++) {
             for (int j = 0; j < ranks[rank].length(); j++) {
-                int piece = PIECES.indexOf(ranks[rank].charAt(j));
-                if (piece > -1) {
+
+                Piece piece = Piece.fromIndex(PIECES.indexOf(ranks[rank].charAt(j)));
+
+                if (piece != null) {
                     board.setBitboard(piece, board.getBitboard(piece) | 1L << (63 - square));
                     square += 1;
                 } else {
