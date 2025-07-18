@@ -15,15 +15,15 @@ public class BoardTest {
 
     @Test
     void getPieceAtSquare_shouldReturnWhitePawn() {
-        assertEquals(0, board.getPieceAtSquare(48));
-        assertEquals(0, board.getPieceAtSquare(52));
-        assertEquals(0, board.getPieceAtSquare(55));
+        assertEquals(Piece.WHITE_PAWN, board.getPieceAtSquare(48));
+        assertEquals(Piece.WHITE_PAWN, board.getPieceAtSquare(52));
+        assertEquals(Piece.WHITE_PAWN, board.getPieceAtSquare(55));
     }
 
     @Test
     void getPieceAtSquare_shouldReturnEmptySquare() {
-        assertEquals(-1, board.getPieceAtSquare(24));
-        assertEquals(-1, board.getPieceAtSquare(28));
-        assertEquals(-1, board.getPieceAtSquare(31));
+        assertEquals(null, board.getPieceAtSquare(24));
+        assertEquals(null, board.getPieceAtSquare(28));
+        assertEquals(null, board.getPieceAtSquare(31));
     }
 }
