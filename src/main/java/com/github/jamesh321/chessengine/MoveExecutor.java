@@ -32,22 +32,24 @@ public class MoveExecutor {
         Piece toPiece = board.getPieceAtSquare(to);
 
         switch (move.getSpecialMove()) {
-            case 0: // None
+            case Move.NORMAL:
                 movePiece(board, fromPiece, fromMask, toMask);
                 takePiece(board, toPiece, toMask);
                 break;
-            case 1: // Piece promotion
+            case Move.QUEEN_PROMOTION: // Handles all promotions, not just queen.
                 Piece promotionPiece = getPromotionPiece(move.getPromotionPiece(), board.isWhiteTurn());
                 movePiece(board, promotionPiece, fromMask, toMask);
                 takePiece(board, toPiece, toMask);
                 takePiece(board, fromPiece, fromMask);
                 break;
-            case 2: // En passant
+            case Move.EN_PASSANT:
                 movePiece(board, fromPiece, fromMask, toMask);
                 takeEnPassantPiece(board, toMask);
                 break;
-            case 3: // Castling
+            case Move.CASTLE:
                 castle(board, to, fromPiece, fromMask, toMask);
+                break;
+            default:
                 break;
         }
 
@@ -206,6 +208,8 @@ public class MoveExecutor {
             case BLACK_KING:
                 castlingRights &= 0b0011;
                 break;
+            default:
+                break;
         }
 
         switch (toPiece) {
@@ -222,6 +226,8 @@ public class MoveExecutor {
                 } else if (to == 7) {
                     castlingRights &= 0b1011;
                 }
+                break;
+            default:
                 break;
         }
 
