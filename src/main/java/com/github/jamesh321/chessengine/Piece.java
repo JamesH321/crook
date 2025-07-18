@@ -23,4 +23,13 @@ public enum Piece {
     public int getIndex() {
         return this.index;
     }
+
+    public static Piece fromIndex(int index) {
+        for (Piece piece : Piece.values()) {
+            if (piece.getIndex() == index) {
+                return piece;
+            }
+        }
+        throw new IllegalArgumentException("No piece found with value: " + index);
+    }
 }
