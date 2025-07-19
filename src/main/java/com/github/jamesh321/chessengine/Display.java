@@ -3,7 +3,12 @@ package com.github.jamesh321.chessengine;
 /**
  * A utility class for displaying the chess board in the console.
  */
-public class Display {
+public final class Display {
+
+    private Display() {
+        // private constructor to prevent instantiation of this utility class
+    }
+
     private static final char[] PIECES = { 'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k' };
 
     /**
