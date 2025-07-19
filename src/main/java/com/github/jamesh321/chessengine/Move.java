@@ -19,16 +19,36 @@ public class Move {
     private final int TO_FROM_MASK = 0b111111;
     private final int FLAG_MASK = 0b1111;
 
+    /**
+     * A flag for a normal move.
+     */
     public static final int NORMAL = 0;
+    /**
+     * A flag for an en passant move.
+     */
     public static final int EN_PASSANT = 2;
+    /**
+     * A flag for a castling move.
+     */
     public static final int CASTLE = 3;
+    /**
+     * A flag for a queen promotion.
+     */
     public static final int QUEEN_PROMOTION = 1;
+    /**
+     * A flag for a rook promotion.
+     */
     public static final int ROOK_PROMOTION = 5;
+    /**
+     * A flag for a bishop promotion.
+     */
     public static final int BISHOP_PROMOTION = 9;
+    /**
+     * A flag for a knight promotion.
+     */
     public static final int KNIGHT_PROMOTION = 13;
 
     /**
-     * 
      * @param from the square the move is from
      * @param to   the square the move is to
      * @param flag special moves like en passant, castling, and promotion
