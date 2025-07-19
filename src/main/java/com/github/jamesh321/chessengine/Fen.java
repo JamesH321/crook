@@ -27,7 +27,12 @@ import java.util.List;
  * increments after Black's move.</li>
  * </ul>
  */
-public class Fen {
+public final class Fen {
+
+    private Fen() {
+        // private constructor to prevent instantiation of this utility class
+    }
+
     private static final List<Character> PIECES = Arrays.asList('P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q',
             'k');
 
