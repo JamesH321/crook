@@ -10,8 +10,8 @@ public class FenTest {
         String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         Fen.load(fen, board);
 
-        assertEquals(0x000000000000FF00L, board.getBitboard(0));
-        assertEquals(0x00FF000000000000L, board.getBitboard(6));
+        assertEquals(0x000000000000FF00L, board.getBitboard(Piece.WHITE_PAWN));
+        assertEquals(0x00FF000000000000L, board.getBitboard(Piece.BLACK_PAWN));
         assertTrue(board.isWhiteTurn());
         assertEquals(0b1111, board.getCastlingRights());
         assertEquals(-1, board.getEnPassantSquare());
@@ -38,8 +38,8 @@ public class FenTest {
         String fen = "8/8/8/8/8/8/8/8 w - - 10 20";
         Fen.load(fen, board);
 
-        for (int i = 0; i < 12; i++) {
-            assertEquals(0L, board.getBitboard(i));
+        for (Piece piece : Piece.values()) {
+            assertEquals(0L, board.getBitboard(piece));
         }
         assertEquals(0, board.getCastlingRights());
         assertEquals(-1, board.getEnPassantSquare());

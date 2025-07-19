@@ -4,12 +4,35 @@ package com.github.jamesh321.chessengine;
  * Generates and stores tables for each piece that contain all the possible
  * moves from every square.
  */
-public class LookupTables {
+public final class LookupTables {
+
+    private LookupTables() {
+        // private constructor to prevent instantiation of this utility class
+    }
+
+    /**
+     * A lookup table for all possible white pawn attacks.
+     */
     public static final long[] WHITE_PAWN_ATTACKS = new long[64];
+    /**
+     * A lookup table for all possible black pawn attacks.
+     */
     public static final long[] BLACK_PAWN_ATTACKS = new long[64];
+    /**
+     * A lookup table for all possible knight moves.
+     */
     public static final long[] KNIGHT_MOVES = new long[64];
+    /**
+     * A lookup table for all possible king moves.
+     */
     public static final long[] KING_MOVES = new long[64];
+    /**
+     * A lookup table for all possible diagonal rays.
+     */
     public static final long[][] DIAGONAL_RAYS = new long[64][4];
+    /**
+     * A lookup table for all possible straight rays.
+     */
     public static final long[][] STRAIGHT_RAYS = new long[64][4];
 
     public static final int N = 0;

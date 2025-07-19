@@ -15,7 +15,11 @@ package com.github.jamesh321.chessengine;
  * All methods are static and operate directly on the provided {@link Board}
  * instance.
  */
-public class MoveExecutor {
+public final class MoveExecutor {
+
+    private MoveExecutor() {
+        // private constructor to prevent instantiation of this utility class
+    }
 
     /**
      * Executes the provided move. Handles special moves and updates game rules.
@@ -26,28 +30,30 @@ public class MoveExecutor {
     public static void makeMove(Board board, Move move) {
         int from = move.getFrom();
         int to = move.getTo();
-        long fromMask = 0x8000000000000000L >>> from;
-        long toMask = 0x8000000000000000L >>> to;
-        int fromPiece = board.getPieceAtSquare(from);
-        int toPiece = board.getPieceAtSquare(to);
+        long fromMask = 1L << 63 - from;
+        long toMask = 1L << 63 - to;
+        Piece fromPiece = board.getPieceAtSquare(from);
+        Piece toPiece = board.getPieceAtSquare(to);
 
         switch (move.getSpecialMove()) {
-            case 0: // None
+            case Move.NORMAL:
                 movePiece(board, fromPiece, fromMask, toMask);
                 takePiece(board, toPiece, toMask);
                 break;
-            case 1: // Piece promotion
-                int promotionPiece = getPieceIndex(move.getPromotionPiece(), board.isWhiteTurn());
+            case Move.QUEEN_PROMOTION: // Handles all promotions, not just queen.
+                Piece promotionPiece = getPromotionPiece(move.getPromotionPiece(), board.isWhiteTurn());
                 movePiece(board, promotionPiece, fromMask, toMask);
                 takePiece(board, toPiece, toMask);
                 takePiece(board, fromPiece, fromMask);
                 break;
-            case 2: // En passant
+            case Move.EN_PASSANT:
                 movePiece(board, fromPiece, fromMask, toMask);
                 takeEnPassantPiece(board, toMask);
                 break;
-            case 3: // Castling
+            case Move.CASTLE:
                 castle(board, to, fromPiece, fromMask, toMask);
+                break;
+            default:
                 break;
         }
 
@@ -68,7 +74,7 @@ public class MoveExecutor {
      * @param fromMask  the bitboard mask for the square the piece was on
      * @param toMask    the bitboard mask for the square the piece is moving to
      */
-    public static void movePiece(Board board, int fromPiece, long fromMask, long toMask) {
+    public static void movePiece(Board board, Piece fromPiece, long fromMask, long toMask) {
         long newBitboard = (board.getBitboard(fromPiece) & ~fromMask) | toMask;
         board.setBitboard(fromPiece, newBitboard);
     }
@@ -81,8 +87,8 @@ public class MoveExecutor {
      * @param toPiece the piece being captured
      * @param toMask  the bitboard mask for the piece being captured
      */
-    public static void takePiece(Board board, int toPiece, long toMask) {
-        if (toPiece > -1) {
+    public static void takePiece(Board board, Piece toPiece, long toMask) {
+        if (toPiece != null) {
             long newBitboard = board.getBitboard(toPiece) & ~toMask;
             board.setBitboard(toPiece, newBitboard);
         }
@@ -92,15 +98,14 @@ public class MoveExecutor {
      * Gets the index of the piece to which a pawn is being promoted.
      *
      * @param promotionPiece the piece specified in the move to promote to
-     * @param whiteTurn      true if it is white's turn, false if it is black's
-     * @return the index of the piece being promoted to
+     * @param isWhiteTurn    true if it is white's turn, false if it is black's
+     * @return the piece the pawn is being promoted to
      */
-    public static int getPieceIndex(int promotionPiece, boolean whiteTurn) {
-        int pieceIndex = 4 - promotionPiece;
-        if (!whiteTurn) {
-            pieceIndex += 6;
-        }
-        return pieceIndex;
+    public static Piece getPromotionPiece(int promotionPiece, boolean isWhiteTurn) {
+        int pieceIndex = isWhiteTurn ? 4 - promotionPiece : 10 - promotionPiece;
+
+        return Piece.fromIndex(pieceIndex);
+
     }
 
     /**
@@ -110,14 +115,16 @@ public class MoveExecutor {
      * @param toMask the bitboard mask for the piece being captured
      */
     public static void takeEnPassantPiece(Board board, long toMask) {
-        int toPiece;
+        Piece toPiece;
+
         if (board.isWhiteTurn()) {
-            toPiece = 6;
+            toPiece = Piece.BLACK_PAWN;
             toMask >>>= 8;
         } else {
-            toPiece = 0;
+            toPiece = Piece.WHITE_PAWN;
             toMask <<= 8;
         }
+
         takePiece(board, toPiece, toMask);
     }
 
@@ -127,15 +134,13 @@ public class MoveExecutor {
      *
      * @param board     the board on which castling is performed
      * @param to        the square to which the king is moving
-     * @param fromPiece the index of the king piece
+     * @param fromPiece the king piece
      * @param fromMask  the bitboard mask for the square the king is moving from
      * @param toMask    the bitboard mask for the square the king is moving to
      */
-    public static void castle(Board board, int to, int fromPiece, long fromMask, long toMask) {
-        int rook = 3;
-        if (!board.isWhiteTurn()) {
-            rook = 9;
-        }
+    public static void castle(Board board, int to, Piece fromPiece, long fromMask, long toMask) {
+        Piece rook = board.isWhiteTurn() ? Piece.WHITE_ROOK : Piece.BLACK_ROOK;
+
         movePiece(board, fromPiece, fromMask, toMask);
 
         if (to == 58 || to == 2) {
@@ -159,14 +164,15 @@ public class MoveExecutor {
      * @param from      the square from which the piece is being moved
      * @param to        the square to which the piece is being moved
      */
-    public static void setEnPassantSquare(Board board, int fromPiece, int from, int to) {
+    public static void setEnPassantSquare(Board board, Piece fromPiece, int from, int to) {
         int enPassantSquare = -1;
 
-        if (fromPiece == 0 && from - to == 16) {
+        if (fromPiece == Piece.WHITE_PAWN && from - to == 16) {
             enPassantSquare = to + 8;
-        } else if (fromPiece == 6 && from - to == -16) {
+        } else if (fromPiece == Piece.BLACK_PAWN && from - to == -16) {
             enPassantSquare = to - 8;
         }
+
         board.setEnPassantSquare(enPassantSquare);
     }
 
@@ -179,46 +185,57 @@ public class MoveExecutor {
      * @param from      the square from which the move is made
      * @param to        the square to which the move is made
      */
-    public static void setCastlingRights(Board board, int fromPiece, int toPiece, int from, int to) {
+    public static void setCastlingRights(Board board, Piece fromPiece, Piece toPiece, int from, int to) {
         int castlingRights = board.getCastlingRights();
-        switch (fromPiece) {
-            case 3:
-                if (from == 56) {
-                    castlingRights &= 0b1101;
-                } else if (from == 63) {
-                    castlingRights &= 0b1110;
-                }
-                break;
-            case 9:
-                if (from == 0) {
-                    castlingRights &= 0b0111;
-                } else if (from == 7) {
-                    castlingRights &= 0b1011;
-                }
-                break;
-            case 5:
-                castlingRights &= 0b1100;
-                break;
-            case 11:
-                castlingRights &= 0b0011;
-                break;
+
+        if (fromPiece != null) {
+            switch (fromPiece) {
+                case WHITE_ROOK:
+                    if (from == 56) {
+                        castlingRights &= 0b1101;
+                    } else if (from == 63) {
+                        castlingRights &= 0b1110;
+                    }
+                    break;
+                case BLACK_ROOK:
+                    if (from == 0) {
+                        castlingRights &= 0b0111;
+                    } else if (from == 7) {
+                        castlingRights &= 0b1011;
+                    }
+                    break;
+                case WHITE_KING:
+                    castlingRights &= 0b1100;
+                    break;
+                case BLACK_KING:
+                    castlingRights &= 0b0011;
+                    break;
+                default:
+                    break;
+            }
         }
-        switch (toPiece) {
-            case 3:
-                if (to == 56) {
-                    castlingRights &= 0b1101;
-                } else if (to == 63) {
-                    castlingRights &= 0b1110;
-                }
-                break;
-            case 9:
-                if (to == 0) {
-                    castlingRights &= 0b0111;
-                } else if (to == 7) {
-                    castlingRights &= 0b1011;
-                }
-                break;
+
+        if (toPiece != null) {
+            switch (toPiece) {
+                case WHITE_ROOK:
+                    if (to == 56) {
+                        castlingRights &= 0b1101;
+                    } else if (to == 63) {
+                        castlingRights &= 0b1110;
+                    }
+                    break;
+                case BLACK_ROOK:
+                    if (to == 0) {
+                        castlingRights &= 0b0111;
+                    } else if (to == 7) {
+                        castlingRights &= 0b1011;
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
+
         board.setCastlingRights(castlingRights);
     }
 
@@ -230,8 +247,8 @@ public class MoveExecutor {
      * @param fromPiece the piece being moved
      * @param toPiece   the piece on the destination square
      */
-    public static void setHalfmoveClock(Board board, int fromPiece, int toPiece) {
-        if (fromPiece == 0 || fromPiece == 6 || toPiece != -1) {
+    public static void setHalfmoveClock(Board board, Piece fromPiece, Piece toPiece) {
+        if (fromPiece == Piece.WHITE_PAWN || fromPiece == Piece.BLACK_PAWN || toPiece != null) {
             board.setHalfmoveClock(0);
         } else {
             board.setHalfmoveClock(board.getHalfmoveClock() + 1);

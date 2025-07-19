@@ -9,7 +9,12 @@ import java.util.Arrays;
  * and to filter them down to only the legal moves (those that do not leave the
  * king in check).
  */
-public class MoveGenerator {
+public final class MoveGenerator {
+
+    private MoveGenerator() {
+        // private constructor to prevent instantiation of this utility class
+    }
+
     /**
      * Generates a list of all legal moves for the current board state.
      * A legal move is a pseudo-legal move that does not leave the king in check.
@@ -20,8 +25,9 @@ public class MoveGenerator {
     public static ArrayList<Move> generateLegalMoves(Board board) {
         ArrayList<Move> legalMoveList = new ArrayList<>();
 
-        long kingBitboard = board.isWhiteTurn() ? board.getBitboard(5) : board.getBitboard(11);
-        int kingSquare = kingBitboard != 0 ? 63 - Long.numberOfTrailingZeros(kingBitboard) : -1;
+        long kingBitboard = board.isWhiteTurn() ? board.getBitboard(Piece.WHITE_KING)
+                : board.getBitboard(Piece.BLACK_KING);
+        int kingSquare = Long.numberOfLeadingZeros(kingBitboard);
         long kingAttackers = getAttackers(kingSquare, board);
 
         boolean inCheck = kingAttackers != 0;
@@ -68,7 +74,7 @@ public class MoveGenerator {
         ArrayList<Move> moveList = new ArrayList<>();
 
         boolean whiteTurn = board.isWhiteTurn();
-        long pawns = whiteTurn ? board.getBitboard(0) : board.getBitboard(6);
+        long pawns = whiteTurn ? board.getBitboard(Piece.WHITE_PAWN) : board.getBitboard(Piece.BLACK_PAWN);
         long emptySquares = board.getEmptySquares();
         long enemySquares = whiteTurn ? board.getBlackPieces() : board.getWhitePieces();
         long enPassantSquare = 1L << 63 - board.getEnPassantSquare();
@@ -105,7 +111,8 @@ public class MoveGenerator {
     public static ArrayList<Move> generateKnightMoves(Board board) {
         ArrayList<Move> moveList = new ArrayList<>();
 
-        long knights = board.isWhiteTurn() ? board.getBitboard(1) : board.getBitboard(7);
+        long knights = board.isWhiteTurn() ? board.getBitboard(Piece.WHITE_KNIGHT)
+                : board.getBitboard(Piece.BLACK_KNIGHT);
         long movable = board.isWhiteTurn() ? (board.getEmptySquares() | board.getBlackPieces())
                 : (board.getEmptySquares() | board.getWhitePieces());
 
@@ -127,7 +134,8 @@ public class MoveGenerator {
      * @return An ArrayList of pseudo-legal bishop moves.
      */
     public static ArrayList<Move> generateBishopMoves(Board board) {
-        long bishops = board.isWhiteTurn() ? board.getBitboard(2) : board.getBitboard(8);
+        long bishops = board.isWhiteTurn() ? board.getBitboard(Piece.WHITE_BISHOP)
+                : board.getBitboard(Piece.BLACK_BISHOP);
         long ownPieces = board.isWhiteTurn() ? board.getWhitePieces() : board.getBlackPieces();
         long occupied = board.getOccupiedSquares();
 
@@ -141,7 +149,7 @@ public class MoveGenerator {
      * @return An ArrayList of pseudo-legal rook moves.
      */
     public static ArrayList<Move> generateRookMoves(Board board) {
-        long rooks = board.isWhiteTurn() ? board.getBitboard(3) : board.getBitboard(9);
+        long rooks = board.isWhiteTurn() ? board.getBitboard(Piece.WHITE_ROOK) : board.getBitboard(Piece.BLACK_ROOK);
         long ownPieces = board.isWhiteTurn() ? board.getWhitePieces() : board.getBlackPieces();
         long occupied = board.getOccupiedSquares();
 
@@ -157,7 +165,7 @@ public class MoveGenerator {
     public static ArrayList<Move> generateQueenMoves(Board board) {
         ArrayList<Move> moveList = new ArrayList<>();
 
-        long queens = board.isWhiteTurn() ? board.getBitboard(4) : board.getBitboard(10);
+        long queens = board.isWhiteTurn() ? board.getBitboard(Piece.WHITE_QUEEN) : board.getBitboard(Piece.BLACK_QUEEN);
         long ownPieces = board.isWhiteTurn() ? board.getWhitePieces() : board.getBlackPieces();
         long occupied = board.getOccupiedSquares();
 
@@ -176,7 +184,9 @@ public class MoveGenerator {
      */
     public static ArrayList<Move> generateKingMoves(Board board) {
         ArrayList<Move> moveList = new ArrayList<>();
-        long kingBitboard = board.isWhiteTurn() ? board.getBitboard(5) : board.getBitboard(11);
+
+        long kingBitboard = board.isWhiteTurn() ? board.getBitboard(Piece.WHITE_KING)
+                : board.getBitboard(Piece.BLACK_KING);
         long emptySquares = board.getEmptySquares();
         long movable = board.isWhiteTurn() ? emptySquares | board.getBlackPieces()
                 : emptySquares | board.getWhitePieces();
@@ -384,9 +394,9 @@ public class MoveGenerator {
         if (move.getFlag() != Move.EN_PASSANT) {
             return move.getTo() == attackerSquare;
         } else {
-            int takenPiecequare = board.isWhiteTurn() ? board.getEnPassantSquare() + 8
+            int takenPieceSquare = board.isWhiteTurn() ? board.getEnPassantSquare() + 8
                     : board.getEnPassantSquare() - 8;
-            return takenPiecequare == attackerSquare;
+            return takenPieceSquare == attackerSquare;
         }
     }
 

@@ -27,7 +27,12 @@ import java.util.List;
  * increments after Black's move.</li>
  * </ul>
  */
-public class Fen {
+public final class Fen {
+
+    private Fen() {
+        // private constructor to prevent instantiation of this utility class
+    }
+
     private static final List<Character> PIECES = Arrays.asList('P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q',
             'k');
 
@@ -59,16 +64,23 @@ public class Fen {
         String[] ranks = boardPosition.split("/");
 
         // Clear board
-        for (int i = 0; i < 12; i++) {
-            board.setBitboard(i, 0L);
+        for (Piece piece : Piece.values()) {
+            board.setBitboard(piece, 0L);
         }
 
         // Iterate over squares in each rank and load pieces to square
         int square = 0;
         for (int rank = 0; rank < 8; rank++) {
             for (int j = 0; j < ranks[rank].length(); j++) {
-                int piece = PIECES.indexOf(ranks[rank].charAt(j));
-                if (piece > -1) {
+
+                Piece piece;
+                try {
+                    piece = Piece.fromIndex(PIECES.indexOf(ranks[rank].charAt(j)));
+                } catch (IllegalArgumentException e) {
+                    piece = null;
+                }
+
+                if (piece != null) {
                     board.setBitboard(piece, board.getBitboard(piece) | 1L << (63 - square));
                     square += 1;
                 } else {

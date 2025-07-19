@@ -3,7 +3,12 @@ package com.github.jamesh321.chessengine;
 /**
  * A utility class for displaying the chess board in the console.
  */
-public class Display {
+public final class Display {
+
+    private Display() {
+        // private constructor to prevent instantiation of this utility class
+    }
+
     private static final char[] PIECES = { 'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k' };
 
     /**
@@ -30,7 +35,7 @@ public class Display {
         for (int square = 0; square < 64; square++) {
             int file = square % 8;
             int rank = 8 - (square / 8);
-            int pieceIndex = board.getPieceAtSquare(square);
+            int pieceIndex = board.getPieceAtSquare(square).getIndex();
 
             if (file == 0) {
                 boardString += String.format("%d   |", rank);
