@@ -9,7 +9,12 @@ import java.util.Arrays;
  * and to filter them down to only the legal moves (those that do not leave the
  * king in check).
  */
-public class MoveGenerator {
+public final class MoveGenerator {
+
+    private MoveGenerator() {
+        // private constructor to prevent instantiation of this utility class
+    }
+
     /**
      * Generates a list of all legal moves for the current board state.
      * A legal move is a pseudo-legal move that does not leave the king in check.
