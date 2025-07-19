@@ -1,5 +1,8 @@
 package com.github.jamesh321.chessengine;
 
+/**
+ * Represents a chess piece with its color and type.
+ */
 public enum Piece {
     WHITE_PAWN(0),
     WHITE_KNIGHT(1),
@@ -20,10 +23,21 @@ public enum Piece {
         this.index = index;
     }
 
+    /**
+     * Gets the index of the piece in the {@link Board#bitboards} array.
+     * 
+     * @return the index of the piece
+     */
     public int getIndex() {
         return this.index;
     }
 
+    /**
+     * Gets the piece from its index in the {@link Board#bitboards} array.
+     * 
+     * @param index the index of the piece
+     * @return the piece
+     */
     public static Piece fromIndex(int index) {
         for (Piece piece : Piece.values()) {
             if (piece.getIndex() == index) {
