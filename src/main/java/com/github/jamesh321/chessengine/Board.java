@@ -55,10 +55,22 @@ public class Board {
         this.bitboards = bitboards;
     }
 
+    /**
+     * Gets the bitboard for a specific piece.
+     * 
+     * @param piece the piece to get the bitboard for
+     * @return a long representing the bitboard for the piece
+     */
     public long getBitboard(Piece piece) {
         return bitboards[piece.getIndex()];
     }
 
+    /**
+     * Sets the bitboard for a specific piece.
+     * 
+     * @param piece    the piece to set the bitboard for
+     * @param bitboard a long representing the bitboard for the piece
+     */
     public void setBitboard(Piece piece, long bitboard) {
         this.bitboards[piece.getIndex()] = bitboard;
     }
@@ -175,8 +187,7 @@ public class Board {
      * Gets the piece that is on the specified square.
      *
      * @param square the square on the board (0-63)
-     * @return the index in the bitboards array of the piece at that square, or -1
-     *         if the square is empty
+     * @return the piece at that square, or null if the square is empty
      */
     public Piece getPieceAtSquare(int square) {
         long boardSquare = 1L << 63 - square;
