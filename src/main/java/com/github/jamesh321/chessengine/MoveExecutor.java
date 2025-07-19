@@ -15,7 +15,11 @@ package com.github.jamesh321.chessengine;
  * All methods are static and operate directly on the provided {@link Board}
  * instance.
  */
-public class MoveExecutor {
+public final class MoveExecutor {
+
+    private MoveExecutor() {
+        // private constructor to prevent instantiation of this utility class
+    }
 
     /**
      * Executes the provided move. Handles special moves and updates game rules.
@@ -94,17 +98,14 @@ public class MoveExecutor {
      * Gets the index of the piece to which a pawn is being promoted.
      *
      * @param promotionPiece the piece specified in the move to promote to
-     * @param whiteTurn      true if it is white's turn, false if it is black's
-     * @return the index of the piece being promoted to
+     * @param isWhiteTurn    true if it is white's turn, false if it is black's
+     * @return the piece the pawn is being promoted to
      */
     public static Piece getPromotionPiece(int promotionPiece, boolean isWhiteTurn) {
         int pieceIndex = isWhiteTurn ? 4 - promotionPiece : 10 - promotionPiece;
 
-        try {
-            return Piece.fromIndex(pieceIndex);
-        } catch (Exception e) {
-            return null;
-        }
+        return Piece.fromIndex(pieceIndex);
+
     }
 
     /**
@@ -133,7 +134,7 @@ public class MoveExecutor {
      *
      * @param board     the board on which castling is performed
      * @param to        the square to which the king is moving
-     * @param fromPiece the index of the king piece
+     * @param fromPiece the king piece
      * @param fromMask  the bitboard mask for the square the king is moving from
      * @param toMask    the bitboard mask for the square the king is moving to
      */
