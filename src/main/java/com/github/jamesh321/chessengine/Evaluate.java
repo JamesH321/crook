@@ -7,9 +7,9 @@ package com.github.jamesh321.chessengine;
  * A positive score indicates an advantage for White, while a negative score
  * indicates an advantage for Black.
  */
-public class Evaluator {
+public class Evaluate {
 
-    private Evaluator() {
+    private Evaluate() {
         // private constructor to prevent instantiation of this utility class
     }
 
@@ -28,11 +28,11 @@ public class Evaluator {
      * @return the score of the board position. Positive for white's advantage,
      *         negative for black's
      */
-    public static int evaluateBoard(Board board) {
+    public static int board(Board board) {
         int score = 0;
 
-        score += evaluateMaterial(board);
-        score += evaluatePiecePositions(board);
+        score += material(board);
+        score += piecePositions(board);
 
         return score;
     }
@@ -45,7 +45,7 @@ public class Evaluator {
      * @param board the board to evaluate
      * @return the material score
      */
-    public static int evaluateMaterial(Board board) {
+    public static int material(Board board) {
         int score = 0;
 
         score += getWhiteMaterial(board);
@@ -60,11 +60,11 @@ public class Evaluator {
      * @param board the board to evaluate
      * @return the positional score
      */
-    public static int evaluatePiecePositions(Board board) {
+    public static int piecePositions(Board board) {
         int score = 0;
 
-        score += evaluateWhitePiecePositions(board);
-        score -= evaluateBlackPiecePositions(board);
+        score += whitePiecePositions(board);
+        score -= blackPiecePositions(board);
 
         return score;
     }
@@ -75,17 +75,17 @@ public class Evaluator {
      * @param board the board to evaluate
      * @return the positional score for white's pieces
      */
-    private static int evaluateWhitePiecePositions(Board board) {
+    private static int whitePiecePositions(Board board) {
         int score = 0;
 
-        score += evaluatePiecePositionScore(Piece.WHITE_PAWN, PieceSquareTables.WHITE_PAWN_PST, board);
-        score += evaluatePiecePositionScore(Piece.WHITE_KNIGHT, PieceSquareTables.WHITE_KNIGHT_PST, board);
-        score += evaluatePiecePositionScore(Piece.WHITE_BISHOP, PieceSquareTables.WHITE_BISHOP_PST, board);
-        score += evaluatePiecePositionScore(Piece.WHITE_ROOK, PieceSquareTables.WHITE_ROOK_PST, board);
-        score += evaluatePiecePositionScore(Piece.WHITE_QUEEN, PieceSquareTables.WHITE_QUEEN_PST, board);
+        score += piecePositionScore(Piece.WHITE_PAWN, PieceSquareTables.WHITE_PAWN_PST, board);
+        score += piecePositionScore(Piece.WHITE_KNIGHT, PieceSquareTables.WHITE_KNIGHT_PST, board);
+        score += piecePositionScore(Piece.WHITE_BISHOP, PieceSquareTables.WHITE_BISHOP_PST, board);
+        score += piecePositionScore(Piece.WHITE_ROOK, PieceSquareTables.WHITE_ROOK_PST, board);
+        score += piecePositionScore(Piece.WHITE_QUEEN, PieceSquareTables.WHITE_QUEEN_PST, board);
         score += isEndGame(board)
-                ? evaluatePiecePositionScore(Piece.WHITE_KING, PieceSquareTables.WHITE_KING_END_GAME_PST, board)
-                : evaluatePiecePositionScore(Piece.WHITE_KING, PieceSquareTables.WHITE_KING_MIDDLE_GAME_PST, board);
+                ? piecePositionScore(Piece.WHITE_KING, PieceSquareTables.WHITE_KING_END_GAME_PST, board)
+                : piecePositionScore(Piece.WHITE_KING, PieceSquareTables.WHITE_KING_MIDDLE_GAME_PST, board);
 
         return score;
     }
@@ -96,17 +96,17 @@ public class Evaluator {
      * @param board the board to evaluate
      * @return the positional score for black's pieces
      */
-    private static int evaluateBlackPiecePositions(Board board) {
+    private static int blackPiecePositions(Board board) {
         int score = 0;
 
-        score += evaluatePiecePositionScore(Piece.BLACK_PAWN, PieceSquareTables.BLACK_PAWN_PST, board);
-        score += evaluatePiecePositionScore(Piece.BLACK_KNIGHT, PieceSquareTables.BLACK_KNIGHT_PST, board);
-        score += evaluatePiecePositionScore(Piece.BLACK_BISHOP, PieceSquareTables.BLACK_BISHOP_PST, board);
-        score += evaluatePiecePositionScore(Piece.BLACK_ROOK, PieceSquareTables.BLACK_ROOK_PST, board);
-        score += evaluatePiecePositionScore(Piece.BLACK_QUEEN, PieceSquareTables.BLACK_QUEEN_PST, board);
+        score += piecePositionScore(Piece.BLACK_PAWN, PieceSquareTables.BLACK_PAWN_PST, board);
+        score += piecePositionScore(Piece.BLACK_KNIGHT, PieceSquareTables.BLACK_KNIGHT_PST, board);
+        score += piecePositionScore(Piece.BLACK_BISHOP, PieceSquareTables.BLACK_BISHOP_PST, board);
+        score += piecePositionScore(Piece.BLACK_ROOK, PieceSquareTables.BLACK_ROOK_PST, board);
+        score += piecePositionScore(Piece.BLACK_QUEEN, PieceSquareTables.BLACK_QUEEN_PST, board);
         score += isEndGame(board)
-                ? evaluatePiecePositionScore(Piece.BLACK_KING, PieceSquareTables.BLACK_KING_END_GAME_PST, board)
-                : evaluatePiecePositionScore(Piece.BLACK_KING, PieceSquareTables.BLACK_KING_MIDDLE_GAME_PST, board);
+                ? piecePositionScore(Piece.BLACK_KING, PieceSquareTables.BLACK_KING_END_GAME_PST, board)
+                : piecePositionScore(Piece.BLACK_KING, PieceSquareTables.BLACK_KING_MIDDLE_GAME_PST, board);
 
         return score;
     }
@@ -120,7 +120,7 @@ public class Evaluator {
      * @param board            the board
      * @return the total positional score for the given piece type
      */
-    private static int evaluatePiecePositionScore(Piece piece, int[] pieceSquareTable, Board board) {
+    private static int piecePositionScore(Piece piece, int[] pieceSquareTable, Board board) {
         long pieceBitboard = board.getBitboard(piece);
 
         int score = 0;
