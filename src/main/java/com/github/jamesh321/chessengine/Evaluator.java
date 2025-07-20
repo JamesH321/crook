@@ -1,5 +1,12 @@
 package com.github.jamesh321.chessengine;
 
+/**
+ * The Evaluator class provides static methods for evaluating a chess board
+ * position.
+ * It calculates a score based on material balance and piece-square tables.
+ * A positive score indicates an advantage for White, while a negative score
+ * indicates an advantage for Black.
+ */
 public class Evaluator {
 
     private Evaluator() {
@@ -13,6 +20,14 @@ public class Evaluator {
     public static final int QUEEN_VALUE = 900;
     public static final int KING_VALUE = 10000;
 
+    /**
+     * Evaluates the given board and returns a score representing the position.
+     * The evaluation is based on material and piece positions.
+     *
+     * @param board the board to evaluate
+     * @return the score of the board position. Positive for white's advantage,
+     *         negative for black's
+     */
     public static int evaluateBoard(Board board) {
         int score = 0;
 
@@ -22,6 +37,14 @@ public class Evaluator {
         return score;
     }
 
+    /**
+     * Calculates the material balance of the board.
+     * It sums the values of white's pieces and subtracts the values of black's
+     * pieces.
+     *
+     * @param board the board to evaluate
+     * @return the material score
+     */
     public static int evaluateMaterial(Board board) {
         int score = 0;
 
@@ -31,6 +54,12 @@ public class Evaluator {
         return score;
     }
 
+    /**
+     * Evaluates the positions of the pieces on the board using Piece-Square Tables.
+     *
+     * @param board the board to evaluate
+     * @return the positional score
+     */
     public static int evaluatePiecePositions(Board board) {
         int score = 0;
 
@@ -40,6 +69,12 @@ public class Evaluator {
         return score;
     }
 
+    /**
+     * Evaluates the positions of white's pieces.
+     *
+     * @param board the board to evaluate
+     * @return the positional score for white's pieces
+     */
     private static int evaluateWhitePiecePositions(Board board) {
         int score = 0;
 
@@ -55,6 +90,12 @@ public class Evaluator {
         return score;
     }
 
+    /**
+     * Evaluates the positions of black's pieces.
+     *
+     * @param board the board to evaluate
+     * @return the positional score for black's pieces
+     */
     private static int evaluateBlackPiecePositions(Board board) {
         int score = 0;
 
@@ -70,6 +111,15 @@ public class Evaluator {
         return score;
     }
 
+    /**
+     * Calculates the positional score for a given piece type using its Piece-Square
+     * Table.
+     *
+     * @param piece            the piece type to evaluate
+     * @param pieceSquareTable the corresponding Piece-Square Table
+     * @param board            the board
+     * @return the total positional score for the given piece type
+     */
     private static int evaluatePiecePositionScore(Piece piece, int[] pieceSquareTable, Board board) {
         long pieceBitboard = board.getBitboard(piece);
 
@@ -77,7 +127,6 @@ public class Evaluator {
 
         while (pieceBitboard != 0) {
             int from = 63 - Long.numberOfTrailingZeros(pieceBitboard);
-            System.out.println(from);
 
             score += pieceSquareTable[from];
 
@@ -87,6 +136,14 @@ public class Evaluator {
         return score;
     }
 
+    /**
+     * Determines if the game is in the endgame phase.
+     * If the total number of pieces on the board is less than 16,
+     * it's considered the endgame.
+     *
+     * @param board the board to check
+     * @return true if the game is in the endgame, false otherwise
+     */
     private static boolean isEndGame(Board board) {
         int pieceCount = 0;
 
@@ -101,6 +158,12 @@ public class Evaluator {
         return true;
     }
 
+    /**
+     * Calculates the total material value for white's pieces.
+     *
+     * @param board the board
+     * @return the material score for white
+     */
     private static int getWhiteMaterial(Board board) {
         int score = 0;
 
@@ -113,6 +176,12 @@ public class Evaluator {
         return score;
     }
 
+    /**
+     * Calculates the total material value for black's pieces.
+     *
+     * @param board the board
+     * @return the material score for black
+     */
     private static int getBlackMaterial(Board board) {
         int score = 0;
 
@@ -125,6 +194,14 @@ public class Evaluator {
         return score;
     }
 
+    /**
+     * Calculates the score for a specific piece type based on its count and value.
+     *
+     * @param piece      the piece type
+     * @param pieceValue the value of the piece
+     * @param board      the board
+     * @return the total score for the given piece type
+     */
     private static int getPieceScore(Piece piece, int pieceValue, Board board) {
         return Long.bitCount(board.getBitboard(piece)) * pieceValue;
     }
