@@ -36,4 +36,27 @@ public class EvaluatorTest {
         assertEquals(400, Evaluator.evaluateMaterial(board));
     }
 
+    @Test
+    void testEvaluatePiecePosition_startingPosition() {
+        assertEquals(0, Evaluator.evaluatePiecePositions(board));
+    }
+
+    @Test
+    void testEvaluatePiecePosition_fenPosition1() {
+        Fen.load("8/7N/2R5/4r1p1/2P4k/1P6/P3b1PP/4R1K1 b - - 0 38", board);
+        assertEquals(-20, Evaluator.evaluatePiecePositions(board));
+    }
+
+    @Test
+    void testEvaluatePiecePosition_fenPosition2() {
+        Fen.load("r1b1k1nr/ppp2ppp/8/8/4P3/2P5/PP3KPP/RN1q1B1R w kq - 0 11", board);
+        assertEquals(-5, Evaluator.evaluatePiecePositions(board));
+    }
+
+    @Test
+    void testEvaluatePiecePosition_fenPosition3() {
+        Fen.load("7k/7P/7K/5N2/8/8/8/8 b - - 2 59", board);
+        assertEquals(85, Evaluator.evaluatePiecePositions(board));
+    }
+
 }
