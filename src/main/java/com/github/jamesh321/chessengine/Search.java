@@ -13,7 +13,7 @@ public class Search {
         }
 
         Move bestMove = null;
-        int max = Integer.MIN_VALUE;
+        int max = -100000;
 
         ArrayList<Move> moves = MoveGenerator.generateLegalMoves(engine.getBoard());
 
@@ -42,13 +42,13 @@ public class Search {
             return Evaluate.board(engine.getBoard());
         }
 
-        int max = Integer.MIN_VALUE;
+        int max = -100000;
 
         ArrayList<Move> moves = MoveGenerator.generateLegalMoves(engine.getBoard());
 
         if (moves.isEmpty()) {
             if (isCheckmate(engine.getBoard())) {
-                return Integer.MIN_VALUE;
+                return -100000;
             } else {
                 return 0;
             }
