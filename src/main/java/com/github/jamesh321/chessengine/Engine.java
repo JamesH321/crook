@@ -50,4 +50,8 @@ public class Engine {
             board.restoreState(history.pop());
         }
     }
+
+    public Move findBestMove(int depth) {
+        return Search.findBestMove(depth, this);
+    }
 }
