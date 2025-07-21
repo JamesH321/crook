@@ -57,6 +57,10 @@ public class Move {
         this.data = from | (to << 6) | (flag << 12);
     }
 
+    public Move(String move, Board board) {
+        this.data = getMoveFromString(move, board);
+    }
+
     public int getData() {
         return data;
     }
@@ -91,6 +95,95 @@ public class Move {
      */
     public int getSpecialMove() {
         return getFlag() & 0b0011;
+    }
+
+    public int getMoveFromString(String moveString, Board board) {
+        validateMoveString(moveString);
+
+        int[] coords = parseCoordinates(moveString);
+        int from = coords[0];
+        int to = coords[1];
+        int fromFile = coords[2];
+        int toFile = coords[3];
+
+        int flag = determineFlag(moveString, from, to, fromFile, toFile, board);
+
+        return encodeMove(from, to, flag);
+    }
+
+    private void validateMoveString(String moveString) {
+        if (moveString == null || moveString.length() < 4) {
+            throw new IllegalArgumentException("Invalid move format: " + moveString);
+        }
+    }
+
+    private int[] parseCoordinates(String moveString) {
+        int fromFile = moveString.charAt(0) - 'a';
+        int fromRank = 8 - Character.getNumericValue(moveString.charAt(1));
+        int toFile = moveString.charAt(2) - 'a';
+        int toRank = 8 - Character.getNumericValue(moveString.charAt(3));
+
+        if (fromFile < 0 || fromFile > 7 || fromRank < 0 || fromRank > 7 ||
+                toFile < 0 || toFile > 7 || toRank < 0 || toRank > 7) {
+            throw new IllegalArgumentException("Invalid move coordinates: " + moveString);
+        }
+
+        int from = fromFile + (fromRank * 8);
+        int to = toFile + (toRank * 8);
+
+        return new int[] { from, to, fromFile, toFile };
+    }
+
+    private int determineFlag(String moveString, int from, int to, int fromFile, int toFile, Board board) {
+        int flag = NORMAL;
+
+        // Check for promotion
+        if (moveString.length() == 5) {
+            flag = getPromotionFlag(moveString.charAt(4));
+        }
+
+        Piece piece = board.getPieceAtSquare(from);
+
+        // Check for castling
+        if (isCastlingMove(piece, fromFile, toFile)) {
+            flag = CASTLE;
+        }
+
+        // Check for en passant
+        if (isEnPassantMove(from, to, piece, board)) {
+            flag = EN_PASSANT;
+        }
+
+        return flag;
+    }
+
+    private int getPromotionFlag(char promotionChar) {
+        switch (promotionChar) {
+            case 'q':
+                return QUEEN_PROMOTION;
+            case 'r':
+                return ROOK_PROMOTION;
+            case 'b':
+                return BISHOP_PROMOTION;
+            case 'n':
+                return KNIGHT_PROMOTION;
+            default:
+                throw new IllegalArgumentException("Invalid promotion piece: " + promotionChar);
+        }
+    }
+
+    private boolean isCastlingMove(Piece piece, int fromFile, int toFile) {
+        return (piece == Piece.WHITE_KING || piece == Piece.BLACK_KING) &&
+                Math.abs(fromFile - toFile) == 2;
+    }
+
+    private boolean isEnPassantMove(int from, int to, Piece piece, Board board) {
+        return to == board.getEnPassantSquare() &&
+                (piece == Piece.WHITE_PAWN || piece == Piece.BLACK_PAWN);
+    }
+
+    private int encodeMove(int from, int to, int flag) {
+        return from | (to << 6) | (flag << 12);
     }
 
     /**
