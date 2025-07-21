@@ -7,7 +7,7 @@ package com.github.jamesh321.chessengine;
  * A positive score indicates an advantage for White, while a negative score
  * indicates an advantage for Black.
  */
-public class Evaluate {
+public final class Evaluate {
 
     private Evaluate() {
         // private constructor to prevent instantiation of this utility class
