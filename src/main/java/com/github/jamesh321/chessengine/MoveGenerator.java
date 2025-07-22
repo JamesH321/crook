@@ -344,7 +344,7 @@ public final class MoveGenerator {
      * @param board  The current board state.
      * @return True if the square is attacked, false otherwise.
      */
-    private static boolean isSquareAttacked(int square, Board board) {
+    public static boolean isSquareAttacked(int square, Board board) {
         return getAttackers(square, board) != 0;
     }
 
