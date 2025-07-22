@@ -32,11 +32,7 @@ public class Search {
 
         ArrayList<Move> moves = MoveGenerator.generateLegalMoves(engine.getBoard());
 
-        if (moves.isEmpty()) {
-            return null;
-        }
-
-        if (engine.getBoard().getHalfmoveClock() == 100) {
+        if (moves.isEmpty() || engine.getBoard().getHalfmoveClock() == 100) {
             return null;
         }
 
