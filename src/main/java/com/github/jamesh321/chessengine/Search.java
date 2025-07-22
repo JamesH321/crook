@@ -36,6 +36,10 @@ public class Search {
             return null;
         }
 
+        if (engine.getBoard().getHalfmoveClock() == 100) {
+            return null;
+        }
+
         for (Move move : moves) {
             engine.makeMove(move);
 
@@ -78,6 +82,10 @@ public class Search {
             } else {
                 return 0;
             }
+        }
+
+        if (engine.getBoard().getHalfmoveClock() == 100) {
+            return 0;
         }
 
         for (Move move : moves) {
