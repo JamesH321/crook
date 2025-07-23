@@ -34,7 +34,7 @@ public final class Evaluate {
         score += material(board);
         score += piecePositions(board);
 
-        return score;
+        return Math.abs(score);
     }
 
     /**
