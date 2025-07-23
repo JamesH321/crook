@@ -27,26 +27,24 @@ public final class Uci {
 
     private static void processCommand(String input, Engine engine) {
         String[] tokens = input.split("\\s+");
+        String command = tokens[0];
 
-        for (int token = 0; token < tokens.length; token++) {
-            switch (tokens[token]) {
-                case "uci":
-                    uciCommand();
-                    break;
-                case "isready":
-                    System.out.println("readyok");
-                    break;
-                case "position":
-                    positionCommand(Arrays.copyOfRange(tokens, token + 1, tokens.length), engine);
-                    break;
-                case "go":
-                    goCommand(engine);
-                    break;
-                default:
-                    break;
-            }
+        switch (command) {
+            case "uci":
+                uciCommand();
+                break;
+            case "isready":
+                System.out.println("readyok");
+                break;
+            case "position":
+                positionCommand(tokens, engine);
+                break;
+            case "go":
+                goCommand(engine);
+                break;
+            default:
+                break;
         }
-
     }
 
     private static void uciCommand() {
@@ -55,21 +53,21 @@ public final class Uci {
 
         System.out.printf("id name %s\n", name);
         System.out.printf("id author %s\n", author);
-
         System.out.println("uciok");
     }
 
-    private static void positionCommand(String[] position, Engine engine) {
-        switch (position[0]) {
-            case "startpos":
+    private static void positionCommand(String[] tokens, Engine engine) {
+        if (tokens.length > 1) {
+            if (tokens[1].equals("startpos")) {
                 engine.setBoard(new Board());
-                loadMoves(Arrays.copyOfRange(position, 1, position.length), engine);
-                break;
-            case "fen":
-                String fen = String.join(" ", Arrays.copyOfRange(position, 1, 7));
-                Fen.load(fen, engine.getBoard());
-                loadMoves(Arrays.copyOfRange(position, 2, position.length), engine);
-                break;
+
+                if (tokens.length > 2 && tokens[2].equals("moves")) {
+                    loadMoves(Arrays.copyOfRange(tokens, 3, tokens.length), engine);
+                }
+
+            } else if (tokens[1].equals("fen")) {
+                loadFen(tokens, engine);
+            }
         }
     }
 
@@ -78,11 +76,34 @@ public final class Uci {
         System.out.println("bestmove " + bestMove.toString());
     }
 
-    private static void loadMoves(String[] position, Engine engine) {
-        if (position[0].equals("moves")) {
-            for (String movesString : position) {
-                engine.makeMove(new Move(movesString, engine.getBoard()));
+    private static void loadMoves(String[] moves, Engine engine) {
+        for (String moveString : moves) {
+            engine.makeMove(new Move(moveString, engine.getBoard()));
+        }
+    }
+
+    private static int getMoveIndex(String[] tokens) {
+        for (int i = 2; i < tokens.length; i++) {
+            if (tokens[i].equals("moves")) {
+                return i;
             }
+        }
+
+        return -1;
+    }
+
+    private static void loadFen(String[] tokens, Engine engine) {
+        int movesIndex = getMoveIndex(tokens);
+
+        String fen;
+        if (movesIndex != -1) {
+            fen = String.join(" ", Arrays.copyOfRange(tokens, 2, movesIndex));
+            Fen.load(fen, engine.getBoard());
+
+            loadMoves(Arrays.copyOfRange(tokens, movesIndex + 1, tokens.length), engine);
+        } else {
+            fen = String.join(" ", Arrays.copyOfRange(tokens, 2, tokens.length));
+            Fen.load(fen, engine.getBoard());
         }
     }
 }
