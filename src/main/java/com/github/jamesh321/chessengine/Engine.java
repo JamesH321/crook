@@ -32,6 +32,10 @@ public class Engine {
         return board;
     }
 
+    public void setBoard(Board board) {
+        this.board = board;
+    }
+
     /**
      * Executes the given move and saves the previous board state to history.
      *
