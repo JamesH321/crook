@@ -39,7 +39,7 @@ public class Search {
         for (Move move : moves) {
             engine.makeMove(move);
 
-            int score = -negaMax(depth - 1, engine);
+            int score = -alphaBeta(depth - 1, -100000, 100000, engine);
 
             engine.undoMove();
 
@@ -63,12 +63,10 @@ public class Search {
      * @param engine the chess engine containing the current game state
      * @return the evaluation score from the perspective of the current player
      */
-    public static int negaMax(int depth, Engine engine) {
+    public static int alphaBeta(int depth, int alpha, int beta, Engine engine) {
         if (depth == 0) {
             return Evaluate.board(engine.getBoard());
         }
-
-        int max = -100000;
 
         ArrayList<Move> moves = MoveGenerator.generateLegalMoves(engine.getBoard());
 
@@ -87,16 +85,20 @@ public class Search {
         for (Move move : moves) {
             engine.makeMove(move);
 
-            int score = -negaMax(depth - 1, engine);
+            int score = -alphaBeta(depth - 1, -beta, -alpha, engine);
 
             engine.undoMove();
 
-            if (score > max) {
-                max = score;
+            if (score >= beta) {
+                return beta;
+            }
+
+            if (score > alpha) {
+                alpha = score;
             }
         }
 
-        return max;
+        return alpha;
     }
 
     /**
