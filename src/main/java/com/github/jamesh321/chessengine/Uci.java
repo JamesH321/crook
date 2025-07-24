@@ -59,7 +59,7 @@ public final class Uci {
                 positionCommand(tokens, engine);
                 break;
             case "go":
-                goCommand(engine);
+                goCommand(tokens, engine);
                 break;
             default:
                 break;
@@ -111,9 +111,41 @@ public final class Uci {
      * 
      * @param engine the chess engine to use for finding the best move
      */
-    private static void goCommand(Engine engine) {
-        Move bestMove = engine.findBestMove(5);
-        System.out.println("bestmove " + bestMove.toString());
+    private static void goCommand(String[] tokens, Engine engine) {
+        String timeCommand = engine.getBoard().isWhiteTurn() ? "wtime" : "btime";
+
+        long msecondsRemaining;
+        try {
+            msecondsRemaining = Long.parseLong(tokens[getCommandIndex(tokens, timeCommand) + 1]);
+        } catch (Exception e) {
+            msecondsRemaining = -1;
+        }
+
+        long timeForMove = msecondsRemaining != -1 ? msecondsRemaining / 40 : 2000;
+
+        long startTime = System.currentTimeMillis();
+        long endTime = startTime + timeForMove;
+
+        Move lastBestMove = null;
+        Move bestMove = null;
+
+        for (int depth = 1; depth < 100; depth++) {
+            System.out.println("info depth " + depth);
+
+            bestMove = engine.findBestMove(depth, lastBestMove, endTime);
+
+            if (bestMove == null) {
+                break;
+            }
+
+            if (System.currentTimeMillis() >= endTime) {
+                break;
+            }
+
+            lastBestMove = bestMove;
+        }
+
+        System.out.println("bestmove " + lastBestMove.toString());
     }
 
     /**
@@ -168,5 +200,15 @@ public final class Uci {
             fen = String.join(" ", Arrays.copyOfRange(tokens, 2, tokens.length));
             Fen.load(fen, engine.getBoard());
         }
+    }
+
+    private static int getCommandIndex(String[] tokens, String command) {
+        for (int i = 0; i < tokens.length; i++) {
+            if (tokens[i].equals(command)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 }
