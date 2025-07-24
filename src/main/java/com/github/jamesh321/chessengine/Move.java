@@ -320,4 +320,19 @@ public class Move {
 
         return fromFile + fromRank + toFile + toRank + promotionPiece;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Move move = (Move) o;
+        return data == move.data;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(data);
+    }
 }
