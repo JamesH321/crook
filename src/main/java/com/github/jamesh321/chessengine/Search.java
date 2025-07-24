@@ -1,6 +1,7 @@
 package com.github.jamesh321.chessengine;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * The Search class implements chess position analysis algorithms to find the
@@ -22,7 +23,7 @@ public class Search {
      * @param engine the chess engine containing the current game state
      * @return the best move found, or null if no legal moves exist or depth is 0
      */
-    public static Move findBestMove(int depth, Engine engine) {
+    public static Move findBestMove(int depth, Move lastBestMove, long endTime, Engine engine) {
         if (depth == 0) {
             return null;
         }
@@ -33,13 +34,23 @@ public class Search {
 
         ArrayList<Move> moves = MoveGenerator.generateLegalMoves(engine.getBoard());
 
+        if (lastBestMove != null) {
+            Collections.swap(moves, 0, moves.indexOf(lastBestMove));
+        }
+
         if (moves.isEmpty() || engine.getBoard().getHalfmoveClock() == 100) {
             return null;
         }
 
         for (Move move : moves) {
+            if (System.currentTimeMillis() >= endTime) {
+                return null;
+            }
+
             engine.makeMove(move);
+
             int score = -alphaBeta(depth - 1, -beta, -alpha, engine);
+
             engine.undoMove();
 
             if (score > alpha) {
