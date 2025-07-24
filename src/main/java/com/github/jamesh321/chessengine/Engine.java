@@ -55,7 +55,7 @@ public class Engine {
         }
     }
 
-    public Move findBestMove(int depth) {
-        return Search.findBestMove(depth, this);
+    public Move findBestMove(int depth, Move lastBestMove, long endTime) {
+        return Search.findBestMove(depth, lastBestMove, endTime, this);
     }
 }
