@@ -6,8 +6,8 @@ import java.util.ArrayList;
  * The Search class implements chess position analysis algorithms to find the
  * best move
  * in a given position. It uses the negamax algorithm, a variant of minimax, to
- * evaluate
- * chess positions and determine optimal moves.
+ * evaluate chess positions and determine optimal moves. It also uses alpha-beta
+ * pruning to improve search efficiency.
  */
 public class Search {
     private Search() {
@@ -16,7 +16,7 @@ public class Search {
 
     /**
      * Finds the best move for the current player in the given position by searching
-     * to the specified depth using the negamax algorithm.
+     * to the specified depth using the negamax algorithm with alpha-beta pruning.
      *
      * @param depth  the depth to search to (number of half-moves)
      * @param engine the chess engine containing the current game state
@@ -39,7 +39,7 @@ public class Search {
         for (Move move : moves) {
             engine.makeMove(move);
 
-            int score = -negaMax(depth - 1, engine);
+            int score = -alphaBeta(depth - 1, -100000, 100000, engine);
 
             engine.undoMove();
 
@@ -53,7 +53,8 @@ public class Search {
     }
 
     /**
-     * Implements the negamax algorithm for chess position evaluation.
+     * Implements the negamax algorithm with alpha-beta pruning for chess position
+     * evaluation.
      * Negamax is a variant of minimax that relies on the zero-sum property of
      * chess,
      * simplifying the implementation by always maximizing from the current player's
@@ -63,12 +64,10 @@ public class Search {
      * @param engine the chess engine containing the current game state
      * @return the evaluation score from the perspective of the current player
      */
-    public static int negaMax(int depth, Engine engine) {
+    public static int alphaBeta(int depth, int alpha, int beta, Engine engine) {
         if (depth == 0) {
             return Evaluate.board(engine.getBoard());
         }
-
-        int max = -100000;
 
         ArrayList<Move> moves = MoveGenerator.generateLegalMoves(engine.getBoard());
 
@@ -87,16 +86,20 @@ public class Search {
         for (Move move : moves) {
             engine.makeMove(move);
 
-            int score = -negaMax(depth - 1, engine);
+            int score = -alphaBeta(depth - 1, -beta, -alpha, engine);
 
             engine.undoMove();
 
-            if (score > max) {
-                max = score;
+            if (score >= beta) {
+                return beta;
+            }
+
+            if (score > alpha) {
+                alpha = score;
             }
         }
 
-        return max;
+        return alpha;
     }
 
     /**
