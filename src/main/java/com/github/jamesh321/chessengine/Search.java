@@ -28,7 +28,8 @@ public class Search {
         }
 
         Move bestMove = null;
-        int max = -100000;
+        int alpha = -100000;
+        int beta = 100000;
 
         ArrayList<Move> moves = MoveGenerator.generateLegalMoves(engine.getBoard());
 
@@ -38,13 +39,11 @@ public class Search {
 
         for (Move move : moves) {
             engine.makeMove(move);
-
-            int score = -alphaBeta(depth - 1, -100000, 100000, engine);
-
+            int score = -alphaBeta(depth - 1, -beta, -alpha, engine);
             engine.undoMove();
 
-            if (score > max) {
-                max = score;
+            if (score > alpha) {
+                alpha = score;
                 bestMove = move;
             }
         }
