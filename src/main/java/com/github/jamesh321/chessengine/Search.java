@@ -6,8 +6,8 @@ import java.util.ArrayList;
  * The Search class implements chess position analysis algorithms to find the
  * best move
  * in a given position. It uses the negamax algorithm, a variant of minimax, to
- * evaluate
- * chess positions and determine optimal moves.
+ * evaluate chess positions and determine optimal moves. It also uses alpha-beta
+ * pruning to improve search efficiency.
  */
 public class Search {
     private Search() {
@@ -16,7 +16,7 @@ public class Search {
 
     /**
      * Finds the best move for the current player in the given position by searching
-     * to the specified depth using the negamax algorithm.
+     * to the specified depth using the negamax algorithm with alpha-beta pruning.
      *
      * @param depth  the depth to search to (number of half-moves)
      * @param engine the chess engine containing the current game state
@@ -53,7 +53,8 @@ public class Search {
     }
 
     /**
-     * Implements the negamax algorithm for chess position evaluation.
+     * Implements the negamax algorithm with alpha-beta pruning for chess position
+     * evaluation.
      * Negamax is a variant of minimax that relies on the zero-sum property of
      * chess,
      * simplifying the implementation by always maximizing from the current player's
