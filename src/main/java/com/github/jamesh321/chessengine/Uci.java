@@ -2,6 +2,7 @@ package com.github.jamesh321.chessengine;
 
 import java.util.Scanner;
 import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Implementation of the Universal Chess Interface (UCI) protocol.
@@ -112,16 +113,9 @@ public final class Uci {
      * @param engine the chess engine to use for finding the best move
      */
     private static void goCommand(String[] tokens, Engine engine) {
-        String timeCommand = engine.getBoard().isWhiteTurn() ? "wtime" : "btime";
+        HashMap<String, String> commands = processGoCommands(tokens);
 
-        long msecondsRemaining;
-        try {
-            msecondsRemaining = Long.parseLong(tokens[getCommandIndex(tokens, timeCommand) + 1]);
-        } catch (Exception e) {
-            msecondsRemaining = -1;
-        }
-
-        long timeForMove = msecondsRemaining != -1 ? msecondsRemaining / 40 : 2000;
+        long timeForMove = calculateMsecForMove(commands, engine);
 
         long startTime = System.currentTimeMillis();
         long endTime = startTime + timeForMove;
@@ -202,13 +196,70 @@ public final class Uci {
         }
     }
 
-    private static int getCommandIndex(String[] tokens, String command) {
-        for (int i = 0; i < tokens.length; i++) {
-            if (tokens[i].equals(command)) {
-                return i;
+    private static HashMap<String, String> processGoCommands(String[] tokens) {
+        HashMap<String, String> goCommands = new HashMap<>();
+
+        for (int i = 1; i < tokens.length; i++) {
+            switch (tokens[i]) {
+                case "wtime":
+                case "btime":
+                case "winc":
+                case "binc":
+                case "movetime":
+                case "movestogo":
+                case "depth":
+                case "nodes":
+                case "mate":
+                    if (i + 1 < tokens.length) {
+                        goCommands.put(tokens[i], tokens[i + 1]);
+                        i++;
+                    }
+                    break;
+                case "infinite":
+                case "ponder":
+                    goCommands.put(tokens[i], "true");
+                    break;
             }
         }
 
-        return -1;
+        return goCommands;
+    }
+
+    private static long calculateMsecForMove(HashMap<String, String> commands, Engine engine) {
+        if (commands.containsKey("movetime")) {
+            return Long.parseLong(commands.get("movetime"));
+        }
+
+        if (commands.containsKey("infinite")) {
+            return Integer.MAX_VALUE;
+        }
+
+        long whiteTime = getLongValue(commands, "wtime", 0);
+        long blackTime = getLongValue(commands, "btime", 0);
+        long whiteIncrement = getLongValue(commands, "winc", 0);
+        long blackIncrement = getLongValue(commands, "binc", 0);
+        long movesRemaining = getLongValue(commands, "movestogo", 40);
+
+        boolean isWhiteTurn = engine.getBoard().isWhiteTurn();
+        long msecRemaining = isWhiteTurn ? whiteTime : blackTime;
+        long msecIncrement = isWhiteTurn ? whiteIncrement : blackIncrement;
+
+        if (msecRemaining == 0) {
+            return 2000;
+        }
+
+        long timeForMove = (msecRemaining / movesRemaining) + msecIncrement;
+        timeForMove = (long) (timeForMove * 0.95);
+
+        return timeForMove;
+    }
+
+    private static long getLongValue(HashMap<String, String> map, String key, long defaultValue) {
+        String value = map.get(key);
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
     }
 }
