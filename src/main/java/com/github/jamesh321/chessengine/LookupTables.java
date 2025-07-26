@@ -56,55 +56,55 @@ public final class LookupTables {
     private static final int[][] STRAIGHT_DIRECTION = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
 
     static {
-        initializeWhitePawnMoves();
-        initializeBlackPawnMoves();
-        initializeKnightMoves();
-        initializeDiagonal();
-        initializeHorizontal();
-        initializeKingMoves();
+        initialiseWhitePawnMoves();
+        initialiseBlackPawnMoves();
+        initialiseKnightMoves();
+        initialiseDiagonal();
+        initialiseHorizontal();
+        initialiseKingMoves();
     }
 
     /**
-     * Initializes the lookup table for white pawn attack moves from every square.
+     * Initialises the lookup table for white pawn attack moves from every square.
      */
-    private static void initializeWhitePawnMoves() {
+    private static void initialiseWhitePawnMoves() {
         for (int square = 0; square < 64; square++) {
             WHITE_PAWN_ATTACKS[square] = generateMovesForDirections(square, WHITE_PAWN_DIRECTION);
         }
     }
 
     /**
-     * Initializes the lookup table for black pawn attack moves from every square.
+     * Initialises the lookup table for black pawn attack moves from every square.
      */
-    private static void initializeBlackPawnMoves() {
+    private static void initialiseBlackPawnMoves() {
         for (int square = 0; square < 64; square++) {
             BLACK_PAWN_ATTACKS[square] = generateMovesForDirections(square, BLACK_PAWN_DIRECTION);
         }
     }
 
     /**
-     * Initializes the lookup table for knight moves from every square.
+     * Initialises the lookup table for knight moves from every square.
      */
-    private static void initializeKnightMoves() {
+    private static void initialiseKnightMoves() {
         for (int square = 0; square < 64; square++) {
             KNIGHT_MOVES[square] = generateMovesForDirections(square, KNIGHT_DIRECTION);
         }
     }
 
     /**
-     * Initializes the lookup table for king moves from every square.
+     * Initialises the lookup table for king moves from every square.
      */
-    private static void initializeKingMoves() {
+    private static void initialiseKingMoves() {
         for (int square = 0; square < 64; square++) {
             KING_MOVES[square] = generateMovesForDirections(square, KING_DIRECTION);
         }
     }
 
     /**
-     * Initializes the lookup tables for diagonal rays (bishop and queen moves) from
+     * Initialises the lookup tables for diagonal rays (bishop and queen moves) from
      * every square in all four diagonal directions.
      */
-    private static void initializeDiagonal() {
+    private static void initialiseDiagonal() {
         for (int square = 0; square < 64; square++) {
             DIAGONAL_RAYS[square][NE] = generateRay(square, NE, DIAGONAL_DIRECTION);
             DIAGONAL_RAYS[square][NW] = generateRay(square, NW, DIAGONAL_DIRECTION);
@@ -114,10 +114,10 @@ public final class LookupTables {
     }
 
     /**
-     * Initializes the lookup tables for straight rays (rook and queen moves) from
+     * Initialises the lookup tables for straight rays (rook and queen moves) from
      * every square in all four straight directions.
      */
-    private static void initializeHorizontal() {
+    private static void initialiseHorizontal() {
         for (int square = 0; square < 64; square++) {
             STRAIGHT_RAYS[square][N] = generateRay(square, N, STRAIGHT_DIRECTION);
             STRAIGHT_RAYS[square][E] = generateRay(square, E, STRAIGHT_DIRECTION);

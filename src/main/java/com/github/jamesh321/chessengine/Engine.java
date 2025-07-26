@@ -55,7 +55,17 @@ public class Engine {
         }
     }
 
-    public Move findBestMove(int depth) {
-        return Search.findBestMove(depth, this);
+    /**
+     * Finds the best move for the current player by running a search.
+     *
+     * @param depth        the depth to search to (number of half-moves)
+     * @param lastBestMove the previously found best move to prioritise in move
+     *                     ordering
+     * @param endTime      the timestamp at which the search should terminate
+     * @return the best move found, or null if no legal moves exist, depth is 0, or
+     *         time has expired
+     */
+    public Move findBestMove(int depth, Move lastBestMove, long endTime) {
+        return Search.findBestMove(depth, lastBestMove, endTime, this);
     }
 }

@@ -2,6 +2,7 @@ package com.github.jamesh321.chessengine;
 
 import java.util.Scanner;
 import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Implementation of the Universal Chess Interface (UCI) protocol.
@@ -59,7 +60,7 @@ public final class Uci {
                 positionCommand(tokens, engine);
                 break;
             case "go":
-                goCommand(engine);
+                goCommand(tokens, engine);
                 break;
             default:
                 break;
@@ -86,7 +87,7 @@ public final class Uci {
      * either from the starting position or from a FEN string,
      * and then makes any provided moves.
      * 
-     * @param tokens the tokenized command string
+     * @param tokens the tokenised command string
      * @param engine the chess engine instance to update
      */
     private static void positionCommand(String[] tokens, Engine engine) {
@@ -106,14 +107,40 @@ public final class Uci {
 
     /**
      * Handles the 'go' command.
-     * Starts the search for the best move and outputs the result.
-     * Currently uses a fixed search depth of 5.
+     * Starts the search for the best move and outputs the result using iterative
+     * deepening.
      * 
+     * @param tokens the tokenised command string containing search parameters
      * @param engine the chess engine to use for finding the best move
      */
-    private static void goCommand(Engine engine) {
-        Move bestMove = engine.findBestMove(5);
-        System.out.println("bestmove " + bestMove.toString());
+    private static void goCommand(String[] tokens, Engine engine) {
+        HashMap<String, String> commands = processGoCommands(tokens);
+
+        long timeForMove = calculateMsecForMove(commands, engine);
+
+        long startTime = System.currentTimeMillis();
+        long endTime = startTime + timeForMove;
+
+        Move lastBestMove = null;
+        Move bestMove = null;
+
+        for (int depth = 1; depth < 100; depth++) {
+            System.out.println("info depth " + depth);
+
+            bestMove = engine.findBestMove(depth, lastBestMove, endTime);
+
+            if (bestMove == null) {
+                break;
+            }
+
+            if (System.currentTimeMillis() >= endTime) {
+                break;
+            }
+
+            lastBestMove = bestMove;
+        }
+
+        System.out.println("bestmove " + lastBestMove.toString());
     }
 
     /**
@@ -132,7 +159,7 @@ public final class Uci {
      * Finds the index of the "moves" keyword in a position command.
      * Used to separate the FEN string from the moves list in a position command.
      * 
-     * @param tokens tokenized command string
+     * @param tokens tokenised command string
      * @return the index of the "moves" token, or -1 if not found
      */
     private static int getMoveIndex(String[] tokens) {
@@ -152,7 +179,7 @@ public final class Uci {
      * - "position fen [fen string]"
      * - "position fen [fen string] moves [move1] [move2] ..."
      * 
-     * @param tokens tokenized command string containing a FEN position
+     * @param tokens tokenised command string containing a FEN position
      * @param engine the chess engine to update with the position
      */
     private static void loadFen(String[] tokens, Engine engine) {
@@ -167,6 +194,98 @@ public final class Uci {
         } else {
             fen = String.join(" ", Arrays.copyOfRange(tokens, 2, tokens.length));
             Fen.load(fen, engine.getBoard());
+        }
+    }
+
+    /**
+     * Processes the 'go' command parameters and returns them as a map.
+     * Handles parameters like wtime, btime, winc, binc, movetime, etc.
+     * 
+     * @param tokens the tokenised command string
+     * @return a map of parameter names to their values
+     */
+    private static HashMap<String, String> processGoCommands(String[] tokens) {
+        HashMap<String, String> goCommands = new HashMap<>();
+
+        for (int i = 1; i < tokens.length; i++) {
+            switch (tokens[i]) {
+                case "wtime":
+                case "btime":
+                case "winc":
+                case "binc":
+                case "movetime":
+                case "movestogo":
+                case "depth":
+                case "nodes":
+                case "mate":
+                    if (i + 1 < tokens.length) {
+                        goCommands.put(tokens[i], tokens[i + 1]);
+                        i++;
+                    }
+                    break;
+                case "infinite":
+                case "ponder":
+                    goCommands.put(tokens[i], "true");
+                    break;
+            }
+        }
+
+        return goCommands;
+    }
+
+    /**
+     * Calculates the time in milliseconds to allocate for the next move.
+     * Takes into account the remaining time, increment, and moves to go.
+     * 
+     * @param commands the map of go command parameters
+     * @param engine   the chess engine instance to check the current turn
+     * @return the time in milliseconds to use for the next move
+     */
+    private static long calculateMsecForMove(HashMap<String, String> commands, Engine engine) {
+        if (commands.containsKey("movetime")) {
+            return Long.parseLong(commands.get("movetime"));
+        }
+
+        if (commands.containsKey("infinite")) {
+            return Integer.MAX_VALUE;
+        }
+
+        long whiteTime = getLongValue(commands, "wtime", 0);
+        long blackTime = getLongValue(commands, "btime", 0);
+        long whiteIncrement = getLongValue(commands, "winc", 0);
+        long blackIncrement = getLongValue(commands, "binc", 0);
+        long movesRemaining = getLongValue(commands, "movestogo", 40);
+
+        boolean isWhiteTurn = engine.getBoard().isWhiteTurn();
+        long msecRemaining = isWhiteTurn ? whiteTime : blackTime;
+        long msecIncrement = isWhiteTurn ? whiteIncrement : blackIncrement;
+
+        if (msecRemaining == 0) {
+            return 2000;
+        }
+
+        long timeForMove = (msecRemaining / movesRemaining) + msecIncrement;
+        timeForMove = (long) (timeForMove * 0.95);
+
+        return timeForMove;
+    }
+
+    /**
+     * Safely gets a long value from a map with a default fallback.
+     * 
+     * @param map          the map containing parameter values
+     * @param key          the key to look up in the map
+     * @param defaultValue the default value to return if the key is missing or
+     *                     invalid
+     * @return the value from the map as a long, or defaultValue if not found or
+     *         invalid
+     */
+    private static long getLongValue(HashMap<String, String> map, String key, long defaultValue) {
+        String value = map.get(key);
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return defaultValue;
         }
     }
 }

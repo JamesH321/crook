@@ -1,6 +1,7 @@
 package com.github.jamesh321.chessengine;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * The Search class implements chess position analysis algorithms to find the
@@ -18,33 +19,46 @@ public class Search {
      * Finds the best move for the current player in the given position by searching
      * to the specified depth using the negamax algorithm with alpha-beta pruning.
      *
-     * @param depth  the depth to search to (number of half-moves)
-     * @param engine the chess engine containing the current game state
-     * @return the best move found, or null if no legal moves exist or depth is 0
+     * @param depth        the depth to search to (number of half-moves)
+     * @param lastBestMove the previously found best move to prioritise in move
+     *                     ordering
+     * @param endTime      the timestamp at which the search should terminate
+     * @param engine       the chess engine containing the current game state
+     * @return the best move found, or null if no legal moves exist, depth is 0, or
+     *         time has expired
      */
-    public static Move findBestMove(int depth, Engine engine) {
+    public static Move findBestMove(int depth, Move lastBestMove, long endTime, Engine engine) {
         if (depth == 0) {
             return null;
         }
 
         Move bestMove = null;
-        int max = -100000;
+        int alpha = -100000;
+        int beta = 100000;
 
         ArrayList<Move> moves = MoveGenerator.generateLegalMoves(engine.getBoard());
+
+        if (lastBestMove != null) {
+            Collections.swap(moves, 0, moves.indexOf(lastBestMove));
+        }
 
         if (moves.isEmpty() || engine.getBoard().getHalfmoveClock() == 100) {
             return null;
         }
 
         for (Move move : moves) {
+            if (System.currentTimeMillis() >= endTime) {
+                return null;
+            }
+
             engine.makeMove(move);
 
-            int score = -alphaBeta(depth - 1, -100000, 100000, engine);
+            int score = -alphaBeta(depth - 1, -beta, -alpha, engine);
 
             engine.undoMove();
 
-            if (score > max) {
-                max = score;
+            if (score > alpha) {
+                alpha = score;
                 bestMove = move;
             }
         }
@@ -61,6 +75,8 @@ public class Search {
      * perspective.
      *
      * @param depth  the remaining depth to search
+     * @param alpha  the alpha value for alpha-beta pruning
+     * @param beta   the beta value for alpha-beta pruning
      * @param engine the chess engine containing the current game state
      * @return the evaluation score from the perspective of the current player
      */
@@ -113,10 +129,6 @@ public class Search {
                 : board.getBitboard(Piece.BLACK_KING);
         int kingSquare = Long.numberOfLeadingZeros(kingBitboard);
 
-        if (MoveGenerator.isSquareAttacked(kingSquare, board)) {
-            return true;
-        }
-
-        return false;
+        return MoveGenerator.isSquareAttacked(kingSquare, board);
     }
 }
