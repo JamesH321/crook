@@ -1,7 +1,7 @@
 package com.github.jamesh321.chessengine;
 
 /**
- * The Evaluator class provides static methods for evaluating a chess board
+ * The Evaluate class provides static methods for evaluating a chess board
  * position.
  * It calculates a score based on material balance and piece-square tables.
  * A positive score indicates an advantage for White, while a negative score
