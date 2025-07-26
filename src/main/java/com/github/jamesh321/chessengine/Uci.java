@@ -87,7 +87,7 @@ public final class Uci {
      * either from the starting position or from a FEN string,
      * and then makes any provided moves.
      * 
-     * @param tokens the tokenized command string
+     * @param tokens the tokenised command string
      * @param engine the chess engine instance to update
      */
     private static void positionCommand(String[] tokens, Engine engine) {
@@ -107,9 +107,10 @@ public final class Uci {
 
     /**
      * Handles the 'go' command.
-     * Starts the search for the best move and outputs the result.
-     * Currently uses a fixed search depth of 5.
+     * Starts the search for the best move and outputs the result using iterative
+     * deepening.
      * 
+     * @param tokens the tokenised command string containing search parameters
      * @param engine the chess engine to use for finding the best move
      */
     private static void goCommand(String[] tokens, Engine engine) {
@@ -158,7 +159,7 @@ public final class Uci {
      * Finds the index of the "moves" keyword in a position command.
      * Used to separate the FEN string from the moves list in a position command.
      * 
-     * @param tokens tokenized command string
+     * @param tokens tokenised command string
      * @return the index of the "moves" token, or -1 if not found
      */
     private static int getMoveIndex(String[] tokens) {
@@ -178,7 +179,7 @@ public final class Uci {
      * - "position fen [fen string]"
      * - "position fen [fen string] moves [move1] [move2] ..."
      * 
-     * @param tokens tokenized command string containing a FEN position
+     * @param tokens tokenised command string containing a FEN position
      * @param engine the chess engine to update with the position
      */
     private static void loadFen(String[] tokens, Engine engine) {
@@ -196,6 +197,13 @@ public final class Uci {
         }
     }
 
+    /**
+     * Processes the 'go' command parameters and returns them as a map.
+     * Handles parameters like wtime, btime, winc, binc, movetime, etc.
+     * 
+     * @param tokens the tokenised command string
+     * @return a map of parameter names to their values
+     */
     private static HashMap<String, String> processGoCommands(String[] tokens) {
         HashMap<String, String> goCommands = new HashMap<>();
 
@@ -225,6 +233,14 @@ public final class Uci {
         return goCommands;
     }
 
+    /**
+     * Calculates the time in milliseconds to allocate for the next move.
+     * Takes into account the remaining time, increment, and moves to go.
+     * 
+     * @param commands the map of go command parameters
+     * @param engine   the chess engine instance to check the current turn
+     * @return the time in milliseconds to use for the next move
+     */
     private static long calculateMsecForMove(HashMap<String, String> commands, Engine engine) {
         if (commands.containsKey("movetime")) {
             return Long.parseLong(commands.get("movetime"));
@@ -254,6 +270,16 @@ public final class Uci {
         return timeForMove;
     }
 
+    /**
+     * Safely gets a long value from a map with a default fallback.
+     * 
+     * @param map          the map containing parameter values
+     * @param key          the key to look up in the map
+     * @param defaultValue the default value to return if the key is missing or
+     *                     invalid
+     * @return the value from the map as a long, or defaultValue if not found or
+     *         invalid
+     */
     private static long getLongValue(HashMap<String, String> map, String key, long defaultValue) {
         String value = map.get(key);
         try {
