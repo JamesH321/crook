@@ -19,9 +19,13 @@ public class Search {
      * Finds the best move for the current player in the given position by searching
      * to the specified depth using the negamax algorithm with alpha-beta pruning.
      *
-     * @param depth  the depth to search to (number of half-moves)
-     * @param engine the chess engine containing the current game state
-     * @return the best move found, or null if no legal moves exist or depth is 0
+     * @param depth        the depth to search to (number of half-moves)
+     * @param lastBestMove the previously found best move to prioritise in move
+     *                     ordering
+     * @param endTime      the timestamp at which the search should terminate
+     * @param engine       the chess engine containing the current game state
+     * @return the best move found, or null if no legal moves exist, depth is 0, or
+     *         time has expired
      */
     public static Move findBestMove(int depth, Move lastBestMove, long endTime, Engine engine) {
         if (depth == 0) {
@@ -71,6 +75,8 @@ public class Search {
      * perspective.
      *
      * @param depth  the remaining depth to search
+     * @param alpha  the alpha value for alpha-beta pruning
+     * @param beta   the beta value for alpha-beta pruning
      * @param engine the chess engine containing the current game state
      * @return the evaluation score from the perspective of the current player
      */
@@ -123,10 +129,6 @@ public class Search {
                 : board.getBitboard(Piece.BLACK_KING);
         int kingSquare = Long.numberOfLeadingZeros(kingBitboard);
 
-        if (MoveGenerator.isSquareAttacked(kingSquare, board)) {
-            return true;
-        }
-
-        return false;
+        return MoveGenerator.isSquareAttacked(kingSquare, board);
     }
 }
