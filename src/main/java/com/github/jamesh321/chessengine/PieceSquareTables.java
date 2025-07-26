@@ -155,7 +155,7 @@ public class PieceSquareTables {
     }
 
     /**
-     * Initializes a Piece-Square Table for a black piece by flipping the corresponding white piece's table.
+     * Initialises a Piece-Square Table for a black piece by flipping the corresponding white piece's table.
      *
      * @param whitePST the Piece-Square Table for the white piece
      * @param blackPST the array to be filled with the Piece-Square Table for the black piece
