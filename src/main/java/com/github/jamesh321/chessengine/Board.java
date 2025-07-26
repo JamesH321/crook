@@ -190,7 +190,7 @@ public class Board {
      * @return the piece at that square, or null if the square is empty
      */
     public Piece getPieceAtSquare(int square) {
-        long boardSquare = 1L << 63 - square;
+        long boardSquare = LookupTables.BITBOARD_SQUARES[square];
         for (Piece piece : Piece.values()) {
             if ((boardSquare & bitboards[piece.getIndex()]) != 0) {
                 return piece;

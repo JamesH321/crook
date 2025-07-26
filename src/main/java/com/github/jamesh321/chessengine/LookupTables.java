@@ -158,7 +158,7 @@ public final class LookupTables {
             if (toFile < 0 || toFile > 7 || toRank < 0 || toRank > 7) {
                 continue;
             }
-            moves |= 1L << (63 - (toRank * 8 + toFile));
+            moves |= BITBOARD_SQUARES[toRank * 8 + toFile];
         }
         return moves;
     }
@@ -181,7 +181,7 @@ public final class LookupTables {
             if (file < 0 || file > 7 || rank < 0 || rank > 7) {
                 break;
             }
-            ray |= 1L << (63 - (rank * 8 + file));
+            ray |= BITBOARD_SQUARES[rank * 8 + file];
         }
         return ray;
     }

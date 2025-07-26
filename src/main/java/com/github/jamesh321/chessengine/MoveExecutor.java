@@ -30,8 +30,8 @@ public final class MoveExecutor {
     public static void makeMove(Board board, Move move) {
         int from = move.getFrom();
         int to = move.getTo();
-        long fromMask = 1L << 63 - from;
-        long toMask = 1L << 63 - to;
+        long fromMask = LookupTables.BITBOARD_SQUARES[from];
+        long toMask = LookupTables.BITBOARD_SQUARES[to];
         Piece fromPiece = board.getPieceAtSquare(from);
         Piece toPiece = board.getPieceAtSquare(to);
 

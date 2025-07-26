@@ -81,7 +81,7 @@ public final class Fen {
                 }
 
                 if (piece != null) {
-                    board.setBitboard(piece, board.getBitboard(piece) | 1L << (63 - square));
+                    board.setBitboard(piece, board.getBitboard(piece) | LookupTables.BITBOARD_SQUARES[square]);
                     square += 1;
                 } else {
                     square += Character.getNumericValue(ranks[rank].charAt(j));
