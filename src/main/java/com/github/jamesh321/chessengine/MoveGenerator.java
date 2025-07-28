@@ -77,7 +77,9 @@ public final class MoveGenerator {
         long pawns = whiteTurn ? board.getBitboard(Piece.WHITE_PAWN) : board.getBitboard(Piece.BLACK_PAWN);
         long emptySquares = board.getEmptySquares();
         long enemySquares = whiteTurn ? board.getBlackPieces() : board.getWhitePieces();
-        long enPassantSquare = 1L << 63 - board.getEnPassantSquare();
+        long enPassantSquare = board.getEnPassantSquare() != -1
+                ? LookupTables.BITBOARD_SQUARES[board.getEnPassantSquare()]
+                : 0;
         int secondToLastRank = whiteTurn ? 1 : 6;
 
         while (pawns != 0) {
@@ -257,8 +259,8 @@ public final class MoveGenerator {
 
             long occupied = board.getOccupiedSquares();
 
-            occupied &= ~(1L << (63 - move.getFrom()));
-            occupied |= 1L << (63 - move.getTo());
+            occupied &= ~LookupTables.BITBOARD_SQUARES[move.getFrom()];
+            occupied |= LookupTables.BITBOARD_SQUARES[move.getTo()];
 
             board.setOccupiedSquares(occupied);
 
@@ -289,11 +291,11 @@ public final class MoveGenerator {
             if (move.getFlag() == Move.EN_PASSANT) {
                 int takenPiecequare = board.isWhiteTurn() ? board.getEnPassantSquare() + 8
                         : board.getEnPassantSquare() - 8;
-                occupied &= ~(1L << (63 - takenPiecequare));
+                occupied &= ~LookupTables.BITBOARD_SQUARES[takenPiecequare];
             }
 
-            occupied &= ~(1L << (63 - move.getFrom()));
-            occupied |= 1L << (63 - move.getTo());
+            occupied &= ~LookupTables.BITBOARD_SQUARES[move.getFrom()];
+            occupied |= LookupTables.BITBOARD_SQUARES[move.getTo()];
 
             board.setOccupiedSquares(occupied);
 
@@ -359,8 +361,8 @@ public final class MoveGenerator {
     private static boolean checkBlocked(Move move, int kingSquare, Board board) {
         long occupied = board.getOccupiedSquares();
 
-        occupied &= ~(1L << (63 - move.getFrom()));
-        occupied |= 1L << (63 - move.getTo());
+        occupied &= ~LookupTables.BITBOARD_SQUARES[move.getFrom()];
+        occupied |= LookupTables.BITBOARD_SQUARES[move.getTo()];
 
         board.setOccupiedSquares(occupied);
 
@@ -422,15 +424,15 @@ public final class MoveGenerator {
 
         if (whiteTurn) {
             // Single push
-            moves[0] |= (1L << (63 - (from - 8))) & emptySquares;
+            moves[0] |= LookupTables.BITBOARD_SQUARES[from - 8] & emptySquares;
 
             // Double push
             if (from >= 48 && from <= 55) {
-                boolean singleEmpty = ((1L << (63 - (from - 8))) & emptySquares) != 0;
-                boolean doubleEmpty = ((1L << (63 - (from - 16))) & emptySquares) != 0;
+                boolean singleEmpty = (LookupTables.BITBOARD_SQUARES[from - 8] & emptySquares) != 0;
+                boolean doubleEmpty = (LookupTables.BITBOARD_SQUARES[from - 16] & emptySquares) != 0;
 
                 if (singleEmpty && doubleEmpty) {
-                    moves[0] |= (1L << (63 - (from - 16)));
+                    moves[0] |= LookupTables.BITBOARD_SQUARES[from - 16];
                 }
             }
 
@@ -439,15 +441,15 @@ public final class MoveGenerator {
             moves[1] = LookupTables.WHITE_PAWN_ATTACKS[from] & enPassantSquare;
         } else {
             // Single push
-            moves[0] |= (1L << (63 - (from + 8))) & emptySquares;
+            moves[0] |= LookupTables.BITBOARD_SQUARES[from + 8] & emptySquares;
 
             // Double push
             if (from >= 8 && from <= 15) {
-                boolean singleEmpty = ((1L << (63 - (from + 8))) & emptySquares) != 0;
-                boolean doubleEmpty = ((1L << (63 - (from + 16))) & emptySquares) != 0;
+                boolean singleEmpty = (LookupTables.BITBOARD_SQUARES[from + 8] & emptySquares) != 0;
+                boolean doubleEmpty = (LookupTables.BITBOARD_SQUARES[from + 16] & emptySquares) != 0;
 
                 if (singleEmpty && doubleEmpty) {
-                    moves[0] |= (1L << (63 - (from + 16)));
+                    moves[0] |= LookupTables.BITBOARD_SQUARES[from + 16];
                 }
             }
 
@@ -532,10 +534,11 @@ public final class MoveGenerator {
         long blockerMask;
         if (63 - Long.numberOfTrailingZeros(blockers) < from) {
             int blockerSquare = Long.numberOfTrailingZeros(blockers);
-            blockerMask = ((1L << blockerSquare) - 1) | (1L << blockerSquare);
+            blockerMask = (LookupTables.BITBOARD_SQUARES[63 - blockerSquare] - 1)
+                    | LookupTables.BITBOARD_SQUARES[63 - blockerSquare];
         } else {
-            int blockerSquare = 63 - Long.numberOfLeadingZeros(blockers);
-            blockerMask = ~((1L << blockerSquare) - 1);
+            int blockerSquare = Long.numberOfLeadingZeros(blockers);
+            blockerMask = ~(LookupTables.BITBOARD_SQUARES[blockerSquare] - 1);
         }
 
         return ray & blockerMask;

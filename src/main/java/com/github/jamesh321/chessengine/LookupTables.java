@@ -11,6 +11,11 @@ public final class LookupTables {
     }
 
     /**
+     * A lookup table for all the squares on the board.
+     */
+    public static final long[] BITBOARD_SQUARES = new long[64];
+
+    /**
      * A lookup table for all possible white pawn attacks.
      */
     public static final long[] WHITE_PAWN_ATTACKS = new long[64];
@@ -56,12 +61,22 @@ public final class LookupTables {
     private static final int[][] STRAIGHT_DIRECTION = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
 
     static {
+        initialiseBitboardSquares();
         initialiseWhitePawnMoves();
         initialiseBlackPawnMoves();
         initialiseKnightMoves();
         initialiseDiagonal();
         initialiseHorizontal();
         initialiseKingMoves();
+    }
+
+    /**
+     * Initialises the lookup table for every square on the board.
+     */
+    private static void initialiseBitboardSquares() {
+        for (int square = 0; square < BITBOARD_SQUARES.length; square++) {
+            BITBOARD_SQUARES[square] = 1L << 63 - square;
+        }
     }
 
     /**
@@ -143,7 +158,7 @@ public final class LookupTables {
             if (toFile < 0 || toFile > 7 || toRank < 0 || toRank > 7) {
                 continue;
             }
-            moves |= 1L << (63 - (toRank * 8 + toFile));
+            moves |= BITBOARD_SQUARES[toRank * 8 + toFile];
         }
         return moves;
     }
@@ -166,7 +181,7 @@ public final class LookupTables {
             if (file < 0 || file > 7 || rank < 0 || rank > 7) {
                 break;
             }
-            ray |= 1L << (63 - (rank * 8 + file));
+            ray |= BITBOARD_SQUARES[rank * 8 + file];
         }
         return ray;
     }
