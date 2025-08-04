@@ -36,6 +36,11 @@ public class MagicBitboards {
     public static final long[][] BISHOP_ATTACKS = new long[64][];
     public static final long[][] ROOK_ATTACKS = new long[64][];
 
+    static {
+        initialiseAttacks(true, BISHOP_ATTACKS);
+        initialiseAttacks(false, ROOK_ATTACKS);
+    }
+
     public static void findMagics() {
         long[] bishopMagics = new long[64];
         long[] rookMagics = new long[64];
@@ -81,6 +86,29 @@ public class MagicBitboards {
             if (isMagic) {
                 return potentialMagic;
             }
+        }
+    }
+
+    private static void initialiseAttacks(boolean isBishop, long[][] slidingPieceAttacks) {
+        for (int square = 0; square < 64; square++) {
+            long magicNumber = isBishop ? BISHOP_MAGICS[square] : ROOK_MAGICS[square];
+
+            long[] rays = isBishop ? LookupTables.DIAGONAL_RAYS[square] : LookupTables.STRAIGHT_RAYS[square];
+
+            long attackMask = getAttackMask(isBishop, square, rays);
+            int shift = 64 - Long.bitCount(attackMask);
+
+            long[] blockerCombinations = generateBlockerCombinations(attackMask);
+            long[] blockerAttacks = getBlockerAttacks(square, isBishop, blockerCombinations);
+
+            long[] attacks = new long[blockerCombinations.length];
+            for (int j = 0; j < blockerCombinations.length; j++) {
+                int index = (int) ((blockerCombinations[j] * magicNumber) >>> shift);
+
+                attacks[index] = blockerAttacks[j];
+            }
+
+            slidingPieceAttacks[square] = attacks;
         }
     }
 
