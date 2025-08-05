@@ -14,7 +14,6 @@ public final class LookupTables {
      * A lookup table for all the squares on the board.
      */
     public static final long[] BITBOARD_SQUARES = new long[64];
-
     /**
      * A lookup table for all possible white pawn attacks.
      */
@@ -34,11 +33,11 @@ public final class LookupTables {
     /**
      * A lookup table for all possible diagonal rays.
      */
-    public static final long[][] DIAGONAL_RAYS = new long[64][4];
+    public static final long[][] BISHOP_RAYS = new long[64][4];
     /**
      * A lookup table for all possible straight rays.
      */
-    public static final long[][] STRAIGHT_RAYS = new long[64][4];
+    public static final long[][] ROOK_RAYS = new long[64][4];
 
     public static final int N = 0;
     public static final int E = 1;
@@ -121,10 +120,10 @@ public final class LookupTables {
      */
     private static void initialiseDiagonal() {
         for (int square = 0; square < 64; square++) {
-            DIAGONAL_RAYS[square][NE] = generateRay(square, NE, DIAGONAL_DIRECTION);
-            DIAGONAL_RAYS[square][NW] = generateRay(square, NW, DIAGONAL_DIRECTION);
-            DIAGONAL_RAYS[square][SE] = generateRay(square, SE, DIAGONAL_DIRECTION);
-            DIAGONAL_RAYS[square][SW] = generateRay(square, SW, DIAGONAL_DIRECTION);
+            BISHOP_RAYS[square][NE] = generateRay(square, NE, DIAGONAL_DIRECTION);
+            BISHOP_RAYS[square][NW] = generateRay(square, NW, DIAGONAL_DIRECTION);
+            BISHOP_RAYS[square][SE] = generateRay(square, SE, DIAGONAL_DIRECTION);
+            BISHOP_RAYS[square][SW] = generateRay(square, SW, DIAGONAL_DIRECTION);
         }
     }
 
@@ -134,10 +133,10 @@ public final class LookupTables {
      */
     private static void initialiseHorizontal() {
         for (int square = 0; square < 64; square++) {
-            STRAIGHT_RAYS[square][N] = generateRay(square, N, STRAIGHT_DIRECTION);
-            STRAIGHT_RAYS[square][E] = generateRay(square, E, STRAIGHT_DIRECTION);
-            STRAIGHT_RAYS[square][S] = generateRay(square, S, STRAIGHT_DIRECTION);
-            STRAIGHT_RAYS[square][W] = generateRay(square, W, STRAIGHT_DIRECTION);
+            ROOK_RAYS[square][N] = generateRay(square, N, STRAIGHT_DIRECTION);
+            ROOK_RAYS[square][E] = generateRay(square, E, STRAIGHT_DIRECTION);
+            ROOK_RAYS[square][S] = generateRay(square, S, STRAIGHT_DIRECTION);
+            ROOK_RAYS[square][W] = generateRay(square, W, STRAIGHT_DIRECTION);
         }
     }
 
@@ -172,8 +171,11 @@ public final class LookupTables {
      * @return bitboard with all of the possible moves from the given square
      */
     private static long generateRay(int square, int direction, int[][] directionArray) {
+        boolean isBishop = directionArray[0][0] == 1;
+
         int file = square % 8;
         int rank = square / 8;
+
         long ray = 0L;
         while (true) {
             file += directionArray[direction][0];
@@ -183,6 +185,37 @@ public final class LookupTables {
             }
             ray |= BITBOARD_SQUARES[rank * 8 + file];
         }
-        return ray;
+
+        return isBishop ? getBishopRayWithoutEdges(ray) : getRookRayWithoutEdges(square, direction, ray);
+    }
+
+    private static long getBishopRayWithoutEdges(long ray) {
+        long noEdgeMask = 0x7E7E7E7E7E7E00L;
+
+        return ray & noEdgeMask;
+    }
+
+    private static long getRookRayWithoutEdges(int square, int direction, long ray) {
+        long rayWithoutEdges = ray;
+
+        int squareToRemove = -1;
+        switch (direction) {
+            case N:
+                squareToRemove = (square % 8);
+                break;
+            case E:
+                squareToRemove = square + (7 - (square % 8));
+                break;
+            case S:
+                squareToRemove = 56 + (square % 8);
+                break;
+            case W:
+                squareToRemove = square - (square % 8);
+                break;
+        }
+
+        rayWithoutEdges &= ~LookupTables.BITBOARD_SQUARES[squareToRemove];
+
+        return rayWithoutEdges;
     }
 }
