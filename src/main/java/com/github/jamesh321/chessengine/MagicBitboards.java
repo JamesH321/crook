@@ -46,8 +46,8 @@ public class MagicBitboards {
         long[] rookMagics = new long[64];
 
         for (int square = 0; square < 64; square++) {
-            bishopMagics[square] = findMagic(square, true, LookupTables.DIAGONAL_RAYS[square]);
-            rookMagics[square] = findMagic(square, false, LookupTables.STRAIGHT_RAYS[square]);
+            bishopMagics[square] = findMagic(square, true, LookupTables.BISHOP_RAYS[square]);
+            rookMagics[square] = findMagic(square, false, LookupTables.ROOK_RAYS[square]);
         }
 
         printMagics("bishop", bishopMagics);
@@ -93,7 +93,7 @@ public class MagicBitboards {
         for (int square = 0; square < 64; square++) {
             long magicNumber = isBishop ? BISHOP_MAGICS[square] : ROOK_MAGICS[square];
 
-            long[] rays = isBishop ? LookupTables.DIAGONAL_RAYS[square] : LookupTables.STRAIGHT_RAYS[square];
+            long[] rays = isBishop ? LookupTables.BISHOP_RAYS[square] : LookupTables.ROOK_RAYS[square];
 
             long attackMask = getAttackMask(isBishop, square, rays);
             int shift = 64 - Long.bitCount(attackMask);
@@ -126,7 +126,7 @@ public class MagicBitboards {
     }
 
     private static long[] getBlockerAttacks(int square, boolean isBishop, long[] blockerCombinations) {
-        long[][] attackRays = isBishop ? LookupTables.DIAGONAL_RAYS : LookupTables.STRAIGHT_RAYS;
+        long[][] attackRays = isBishop ? LookupTables.BISHOP_RAYS : LookupTables.ROOK_RAYS;
         long[] blockerAttacks = new long[blockerCombinations.length];
 
         for (int i = 0; i < blockerCombinations.length; i++) {
@@ -187,7 +187,7 @@ public class MagicBitboards {
         long attackMask = 0;
 
         for (int i = 0; i < 4; i++) {
-            attackMask |= isbishop ? getBishopRayWithoutEdges(rays[i]) : getRookRayWithoutEdges(square, i, rays[i]);
+            attackMask |= rays[i];
         }
 
         return attackMask;
@@ -208,36 +208,6 @@ public class MagicBitboards {
         }
 
         return possibleBlockerSquares;
-    }
-
-    private static long getBishopRayWithoutEdges(long ray) {
-        long noEdgeMask = 0x7E7E7E7E7E7E00L;
-
-        return ray & noEdgeMask;
-    }
-
-    private static long getRookRayWithoutEdges(int square, int direction, long ray) {
-        long rayWithoutEdges = ray;
-
-        int squareToRemove = -1;
-        switch (direction) {
-            case LookupTables.N:
-                squareToRemove = (square % 8);
-                break;
-            case LookupTables.E:
-                squareToRemove = square + (7 - (square % 8));
-                break;
-            case LookupTables.S:
-                squareToRemove = 56 + (square % 8);
-                break;
-            case LookupTables.W:
-                squareToRemove = square - (square % 8);
-                break;
-        }
-
-        rayWithoutEdges &= ~LookupTables.BITBOARD_SQUARES[squareToRemove];
-
-        return rayWithoutEdges;
     }
 
     public static void main(String[] args) {
