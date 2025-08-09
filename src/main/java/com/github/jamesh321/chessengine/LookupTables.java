@@ -34,10 +34,14 @@ public final class LookupTables {
      * A lookup table for all possible diagonal rays.
      */
     public static final long[][] BISHOP_RAYS = new long[64][4];
+
+    public static final long[][] BISHOP_RAYS_WITHOUT_EDGES = new long[64][4];
     /**
      * A lookup table for all possible straight rays.
      */
     public static final long[][] ROOK_RAYS = new long[64][4];
+
+    public static final long[][] ROOK_RAYS_WITHOUT_EDGES = new long[64][4];
 
     public static final int N = 0;
     public static final int E = 1;
@@ -64,8 +68,10 @@ public final class LookupTables {
         initialiseWhitePawnMoves();
         initialiseBlackPawnMoves();
         initialiseKnightMoves();
-        initialiseDiagonal();
-        initialiseHorizontal();
+        initialiseBishop();
+        initialiseBishopWithoutEdges();
+        initialiseRook();
+        initialiseRookWithoutEdges();
         initialiseKingMoves();
     }
 
@@ -118,7 +124,7 @@ public final class LookupTables {
      * Initialises the lookup tables for diagonal rays (bishop and queen moves) from
      * every square in all four diagonal directions.
      */
-    private static void initialiseDiagonal() {
+    private static void initialiseBishop() {
         for (int square = 0; square < 64; square++) {
             BISHOP_RAYS[square][NE] = generateRay(square, NE, DIAGONAL_DIRECTION);
             BISHOP_RAYS[square][NW] = generateRay(square, NW, DIAGONAL_DIRECTION);
@@ -127,16 +133,42 @@ public final class LookupTables {
         }
     }
 
+    private static void initialiseBishopWithoutEdges() {
+        for (int square = 0; square < 64; square++) {
+            BISHOP_RAYS_WITHOUT_EDGES[square][NE] = getBishopRayWithoutEdges(
+                    generateRay(square, NE, DIAGONAL_DIRECTION));
+            BISHOP_RAYS_WITHOUT_EDGES[square][NW] = getBishopRayWithoutEdges(
+                    generateRay(square, NW, DIAGONAL_DIRECTION));
+            BISHOP_RAYS_WITHOUT_EDGES[square][SE] = getBishopRayWithoutEdges(
+                    generateRay(square, SE, DIAGONAL_DIRECTION));
+            BISHOP_RAYS_WITHOUT_EDGES[square][SW] = getBishopRayWithoutEdges(
+                    generateRay(square, SW, DIAGONAL_DIRECTION));
+        }
+    }
+
     /**
      * Initialises the lookup tables for straight rays (rook and queen moves) from
      * every square in all four straight directions.
      */
-    private static void initialiseHorizontal() {
+    private static void initialiseRook() {
         for (int square = 0; square < 64; square++) {
             ROOK_RAYS[square][N] = generateRay(square, N, STRAIGHT_DIRECTION);
             ROOK_RAYS[square][E] = generateRay(square, E, STRAIGHT_DIRECTION);
             ROOK_RAYS[square][S] = generateRay(square, S, STRAIGHT_DIRECTION);
             ROOK_RAYS[square][W] = generateRay(square, W, STRAIGHT_DIRECTION);
+        }
+    }
+
+    private static void initialiseRookWithoutEdges() {
+        for (int square = 0; square < 64; square++) {
+            ROOK_RAYS_WITHOUT_EDGES[square][N] = getRookRayWithoutEdges(square, N,
+                    generateRay(square, N, STRAIGHT_DIRECTION));
+            ROOK_RAYS_WITHOUT_EDGES[square][E] = getRookRayWithoutEdges(square, E,
+                    generateRay(square, E, STRAIGHT_DIRECTION));
+            ROOK_RAYS_WITHOUT_EDGES[square][S] = getRookRayWithoutEdges(square, S,
+                    generateRay(square, S, STRAIGHT_DIRECTION));
+            ROOK_RAYS_WITHOUT_EDGES[square][W] = getRookRayWithoutEdges(square, W,
+                    generateRay(square, W, STRAIGHT_DIRECTION));
         }
     }
 
@@ -171,8 +203,6 @@ public final class LookupTables {
      * @return bitboard with all of the possible moves from the given square
      */
     private static long generateRay(int square, int direction, int[][] directionArray) {
-        boolean isBishop = directionArray[0][0] == 1;
-
         int file = square % 8;
         int rank = square / 8;
 
@@ -186,7 +216,7 @@ public final class LookupTables {
             ray |= BITBOARD_SQUARES[rank * 8 + file];
         }
 
-        return isBishop ? getBishopRayWithoutEdges(ray) : getRookRayWithoutEdges(square, direction, ray);
+        return ray;
     }
 
     private static long getBishopRayWithoutEdges(long ray) {
@@ -200,16 +230,16 @@ public final class LookupTables {
 
         int squareToRemove = -1;
         switch (direction) {
-            case N:
+            case LookupTables.N:
                 squareToRemove = (square % 8);
                 break;
-            case E:
+            case LookupTables.E:
                 squareToRemove = square + (7 - (square % 8));
                 break;
-            case S:
+            case LookupTables.S:
                 squareToRemove = 56 + (square % 8);
                 break;
-            case W:
+            case LookupTables.W:
                 squareToRemove = square - (square % 8);
                 break;
         }
