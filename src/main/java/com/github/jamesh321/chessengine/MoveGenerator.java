@@ -141,7 +141,7 @@ public final class MoveGenerator {
         long ownPieces = board.isWhiteTurn() ? board.getWhitePieces() : board.getBlackPieces();
         long occupied = board.getOccupiedSquares();
 
-        return getSlidingMoves(true, LookupTables.BISHOP_RAYS, bishops, occupied, ownPieces);
+        return getSlidingMoves(true, LookupTables.BISHOP_RAYS_WITHOUT_EDGES, bishops, occupied, ownPieces);
     }
 
     /**
@@ -155,7 +155,7 @@ public final class MoveGenerator {
         long ownPieces = board.isWhiteTurn() ? board.getWhitePieces() : board.getBlackPieces();
         long occupied = board.getOccupiedSquares();
 
-        return getSlidingMoves(false, LookupTables.ROOK_RAYS, rooks, occupied, ownPieces);
+        return getSlidingMoves(false, LookupTables.ROOK_RAYS_WITHOUT_EDGES, rooks, occupied, ownPieces);
     }
 
     /**
@@ -171,8 +171,8 @@ public final class MoveGenerator {
         long ownPieces = board.isWhiteTurn() ? board.getWhitePieces() : board.getBlackPieces();
         long occupied = board.getOccupiedSquares();
 
-        moveList.addAll(getSlidingMoves(false, LookupTables.ROOK_RAYS, queens, occupied, ownPieces));
-        moveList.addAll(getSlidingMoves(true, LookupTables.BISHOP_RAYS, queens, occupied, ownPieces));
+        moveList.addAll(getSlidingMoves(false, LookupTables.ROOK_RAYS_WITHOUT_EDGES, queens, occupied, ownPieces));
+        moveList.addAll(getSlidingMoves(true, LookupTables.BISHOP_RAYS_WITHOUT_EDGES, queens, occupied, ownPieces));
 
         return moveList;
     }
@@ -594,16 +594,18 @@ public final class MoveGenerator {
         attackers |= LookupTables.KNIGHT_MOVES[square] & pieces[1];
 
         // Bishops (using magic bitboards)
-        long bishopRayMask = LookupTables.BISHOP_RAYS[square][0] | LookupTables.BISHOP_RAYS[square][1] |
-                LookupTables.BISHOP_RAYS[square][2] | LookupTables.BISHOP_RAYS[square][3];
+        long bishopRayMask = LookupTables.BISHOP_RAYS_WITHOUT_EDGES[square][0]
+                | LookupTables.BISHOP_RAYS_WITHOUT_EDGES[square][1] |
+                LookupTables.BISHOP_RAYS_WITHOUT_EDGES[square][2] | LookupTables.BISHOP_RAYS_WITHOUT_EDGES[square][3];
         long bishopBlockers = bishopRayMask & occupied;
         int bishopShift = 64 - Long.bitCount(bishopRayMask);
         int bishopIndex = (int) ((bishopBlockers * MagicBitboards.BISHOP_MAGICS[square]) >>> bishopShift);
         attackers |= MagicBitboards.BISHOP_ATTACKS[square][bishopIndex] & pieces[2];
 
         // Rooks (using magic bitboards)
-        long rookRayMask = LookupTables.ROOK_RAYS[square][0] | LookupTables.ROOK_RAYS[square][1] |
-                LookupTables.ROOK_RAYS[square][2] | LookupTables.ROOK_RAYS[square][3];
+        long rookRayMask = LookupTables.ROOK_RAYS_WITHOUT_EDGES[square][0]
+                | LookupTables.ROOK_RAYS_WITHOUT_EDGES[square][1] |
+                LookupTables.ROOK_RAYS_WITHOUT_EDGES[square][2] | LookupTables.ROOK_RAYS_WITHOUT_EDGES[square][3];
         long rookBlockers = rookRayMask & occupied;
         int rookShift = 64 - Long.bitCount(rookRayMask);
         int rookIndex = (int) ((rookBlockers * MagicBitboards.ROOK_MAGICS[square]) >>> rookShift);
