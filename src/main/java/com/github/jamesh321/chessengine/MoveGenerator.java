@@ -520,35 +520,6 @@ public final class MoveGenerator {
     }
 
     /**
-     * Calculates the ray for a sliding piece up until it is blocked by another
-     * piece.
-     *
-     * @param ray      The bitboard representing the ray.
-     * @param occupied A bitboard of all occupied squares.
-     * @param from     The starting square of the ray.
-     * @return A bitboard of the squares along the ray that are not blocked.
-     */
-    private static long getRay(long ray, long occupied, int from) {
-        long blockers = ray & occupied;
-
-        if (blockers == 0) {
-            return ray;
-        }
-
-        long blockerMask;
-        if (63 - Long.numberOfTrailingZeros(blockers) < from) {
-            int blockerSquare = Long.numberOfTrailingZeros(blockers);
-            blockerMask = (LookupTables.BITBOARD_SQUARES[63 - blockerSquare] - 1)
-                    | LookupTables.BITBOARD_SQUARES[63 - blockerSquare];
-        } else {
-            int blockerSquare = Long.numberOfLeadingZeros(blockers);
-            blockerMask = ~(LookupTables.BITBOARD_SQUARES[blockerSquare] - 1);
-        }
-
-        return ray & blockerMask;
-    }
-
-    /**
      * Converts a bitboard of destination squares into a list of Move objects.
      *
      * @param moves A bitboard of destination squares.
