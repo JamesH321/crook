@@ -14,7 +14,6 @@ public final class LookupTables {
      * A lookup table for all the squares on the board.
      */
     public static final long[] BITBOARD_SQUARES = new long[64];
-
     /**
      * A lookup table for all possible white pawn attacks.
      */
@@ -34,11 +33,25 @@ public final class LookupTables {
     /**
      * A lookup table for all possible diagonal rays.
      */
-    public static final long[][] DIAGONAL_RAYS = new long[64][4];
+    public static final long[][] BISHOP_RAYS = new long[64][4];
+
+    /**
+     * A lookup table for diagonal rays with edge squares removed.
+     * Used for magic bitboard attack mask generation. Edge squares are excluded
+     * because they don't affect the attack pattern when occupied by blockers.
+     */
+    public static final long[][] BISHOP_RAYS_WITHOUT_EDGES = new long[64][4];
     /**
      * A lookup table for all possible straight rays.
      */
-    public static final long[][] STRAIGHT_RAYS = new long[64][4];
+    public static final long[][] ROOK_RAYS = new long[64][4];
+
+    /**
+     * A lookup table for orthogonal rays with edge squares removed.
+     * Used for magic bitboard attack mask generation. Edge squares are excluded
+     * because they don't affect the attack pattern when occupied by blockers.
+     */
+    public static final long[][] ROOK_RAYS_WITHOUT_EDGES = new long[64][4];
 
     public static final int N = 0;
     public static final int E = 1;
@@ -65,8 +78,10 @@ public final class LookupTables {
         initialiseWhitePawnMoves();
         initialiseBlackPawnMoves();
         initialiseKnightMoves();
-        initialiseDiagonal();
-        initialiseHorizontal();
+        initialiseBishop();
+        initialiseBishopWithoutEdges();
+        initialiseRook();
+        initialiseRookWithoutEdges();
         initialiseKingMoves();
     }
 
@@ -119,12 +134,29 @@ public final class LookupTables {
      * Initialises the lookup tables for diagonal rays (bishop and queen moves) from
      * every square in all four diagonal directions.
      */
-    private static void initialiseDiagonal() {
+    private static void initialiseBishop() {
         for (int square = 0; square < 64; square++) {
-            DIAGONAL_RAYS[square][NE] = generateRay(square, NE, DIAGONAL_DIRECTION);
-            DIAGONAL_RAYS[square][NW] = generateRay(square, NW, DIAGONAL_DIRECTION);
-            DIAGONAL_RAYS[square][SE] = generateRay(square, SE, DIAGONAL_DIRECTION);
-            DIAGONAL_RAYS[square][SW] = generateRay(square, SW, DIAGONAL_DIRECTION);
+            BISHOP_RAYS[square][NE] = generateRay(square, NE, DIAGONAL_DIRECTION);
+            BISHOP_RAYS[square][NW] = generateRay(square, NW, DIAGONAL_DIRECTION);
+            BISHOP_RAYS[square][SE] = generateRay(square, SE, DIAGONAL_DIRECTION);
+            BISHOP_RAYS[square][SW] = generateRay(square, SW, DIAGONAL_DIRECTION);
+        }
+    }
+
+    /**
+     * Initialises the lookup tables for diagonal rays with edge squares removed.
+     * This is used for magic bitboard attack mask generation.
+     */
+    private static void initialiseBishopWithoutEdges() {
+        for (int square = 0; square < 64; square++) {
+            BISHOP_RAYS_WITHOUT_EDGES[square][NE] = getBishopRayWithoutEdges(
+                    generateRay(square, NE, DIAGONAL_DIRECTION));
+            BISHOP_RAYS_WITHOUT_EDGES[square][NW] = getBishopRayWithoutEdges(
+                    generateRay(square, NW, DIAGONAL_DIRECTION));
+            BISHOP_RAYS_WITHOUT_EDGES[square][SE] = getBishopRayWithoutEdges(
+                    generateRay(square, SE, DIAGONAL_DIRECTION));
+            BISHOP_RAYS_WITHOUT_EDGES[square][SW] = getBishopRayWithoutEdges(
+                    generateRay(square, SW, DIAGONAL_DIRECTION));
         }
     }
 
@@ -132,12 +164,29 @@ public final class LookupTables {
      * Initialises the lookup tables for straight rays (rook and queen moves) from
      * every square in all four straight directions.
      */
-    private static void initialiseHorizontal() {
+    private static void initialiseRook() {
         for (int square = 0; square < 64; square++) {
-            STRAIGHT_RAYS[square][N] = generateRay(square, N, STRAIGHT_DIRECTION);
-            STRAIGHT_RAYS[square][E] = generateRay(square, E, STRAIGHT_DIRECTION);
-            STRAIGHT_RAYS[square][S] = generateRay(square, S, STRAIGHT_DIRECTION);
-            STRAIGHT_RAYS[square][W] = generateRay(square, W, STRAIGHT_DIRECTION);
+            ROOK_RAYS[square][N] = generateRay(square, N, STRAIGHT_DIRECTION);
+            ROOK_RAYS[square][E] = generateRay(square, E, STRAIGHT_DIRECTION);
+            ROOK_RAYS[square][S] = generateRay(square, S, STRAIGHT_DIRECTION);
+            ROOK_RAYS[square][W] = generateRay(square, W, STRAIGHT_DIRECTION);
+        }
+    }
+
+    /**
+     * Initialises the lookup tables for straight rays with edge squares removed.
+     * This is used for magic bitboard attack mask generation.
+     */
+    private static void initialiseRookWithoutEdges() {
+        for (int square = 0; square < 64; square++) {
+            ROOK_RAYS_WITHOUT_EDGES[square][N] = getRookRayWithoutEdges(square, N,
+                    generateRay(square, N, STRAIGHT_DIRECTION));
+            ROOK_RAYS_WITHOUT_EDGES[square][E] = getRookRayWithoutEdges(square, E,
+                    generateRay(square, E, STRAIGHT_DIRECTION));
+            ROOK_RAYS_WITHOUT_EDGES[square][S] = getRookRayWithoutEdges(square, S,
+                    generateRay(square, S, STRAIGHT_DIRECTION));
+            ROOK_RAYS_WITHOUT_EDGES[square][W] = getRookRayWithoutEdges(square, W,
+                    generateRay(square, W, STRAIGHT_DIRECTION));
         }
     }
 
@@ -174,6 +223,7 @@ public final class LookupTables {
     private static long generateRay(int square, int direction, int[][] directionArray) {
         int file = square % 8;
         int rank = square / 8;
+
         long ray = 0L;
         while (true) {
             file += directionArray[direction][0];
@@ -183,6 +233,55 @@ public final class LookupTables {
             }
             ray |= BITBOARD_SQUARES[rank * 8 + file];
         }
+
         return ray;
+    }
+
+    /**
+     * Removes edge squares from a bishop ray for magic bitboard generation.
+     * Edge squares don't affect attack patterns when occupied by blockers,
+     * so they can be excluded from the attack mask.
+     *
+     * @param ray The original bishop ray.
+     * @return The ray with edge squares removed.
+     */
+    private static long getBishopRayWithoutEdges(long ray) {
+        long noEdgeMask = 0x7E7E7E7E7E7E00L;
+
+        return ray & noEdgeMask;
+    }
+
+    /**
+     * Removes the edge square from a rook ray for magic bitboard generation.
+     * For rook rays, only the end square of each ray needs to be removed
+     * since it doesn't affect the attack pattern when occupied.
+     *
+     * @param square    The starting square of the ray.
+     * @param direction The direction of the ray.
+     * @param ray       The original rook ray.
+     * @return The ray with the edge square removed.
+     */
+    private static long getRookRayWithoutEdges(int square, int direction, long ray) {
+        long rayWithoutEdges = ray;
+
+        int squareToRemove = -1;
+        switch (direction) {
+            case LookupTables.N:
+                squareToRemove = (square % 8);
+                break;
+            case LookupTables.E:
+                squareToRemove = square + (7 - (square % 8));
+                break;
+            case LookupTables.S:
+                squareToRemove = 56 + (square % 8);
+                break;
+            case LookupTables.W:
+                squareToRemove = square - (square % 8);
+                break;
+        }
+
+        rayWithoutEdges &= ~LookupTables.BITBOARD_SQUARES[squareToRemove];
+
+        return rayWithoutEdges;
     }
 }
