@@ -35,12 +35,22 @@ public final class LookupTables {
      */
     public static final long[][] BISHOP_RAYS = new long[64][4];
 
+    /**
+     * A lookup table for diagonal rays with edge squares removed.
+     * Used for magic bitboard attack mask generation. Edge squares are excluded
+     * because they don't affect the attack pattern when occupied by blockers.
+     */
     public static final long[][] BISHOP_RAYS_WITHOUT_EDGES = new long[64][4];
     /**
      * A lookup table for all possible straight rays.
      */
     public static final long[][] ROOK_RAYS = new long[64][4];
 
+    /**
+     * A lookup table for orthogonal rays with edge squares removed.
+     * Used for magic bitboard attack mask generation. Edge squares are excluded
+     * because they don't affect the attack pattern when occupied by blockers.
+     */
     public static final long[][] ROOK_RAYS_WITHOUT_EDGES = new long[64][4];
 
     public static final int N = 0;
@@ -133,6 +143,10 @@ public final class LookupTables {
         }
     }
 
+    /**
+     * Initialises the lookup tables for diagonal rays with edge squares removed.
+     * This is used for magic bitboard attack mask generation.
+     */
     private static void initialiseBishopWithoutEdges() {
         for (int square = 0; square < 64; square++) {
             BISHOP_RAYS_WITHOUT_EDGES[square][NE] = getBishopRayWithoutEdges(
@@ -159,6 +173,10 @@ public final class LookupTables {
         }
     }
 
+    /**
+     * Initialises the lookup tables for straight rays with edge squares removed.
+     * This is used for magic bitboard attack mask generation.
+     */
     private static void initialiseRookWithoutEdges() {
         for (int square = 0; square < 64; square++) {
             ROOK_RAYS_WITHOUT_EDGES[square][N] = getRookRayWithoutEdges(square, N,
@@ -219,12 +237,30 @@ public final class LookupTables {
         return ray;
     }
 
+    /**
+     * Removes edge squares from a bishop ray for magic bitboard generation.
+     * Edge squares don't affect attack patterns when occupied by blockers,
+     * so they can be excluded from the attack mask.
+     *
+     * @param ray The original bishop ray.
+     * @return The ray with edge squares removed.
+     */
     private static long getBishopRayWithoutEdges(long ray) {
         long noEdgeMask = 0x7E7E7E7E7E7E00L;
 
         return ray & noEdgeMask;
     }
 
+    /**
+     * Removes the edge square from a rook ray for magic bitboard generation.
+     * For rook rays, only the end square of each ray needs to be removed
+     * since it doesn't affect the attack pattern when occupied.
+     *
+     * @param square    The starting square of the ray.
+     * @param direction The direction of the ray.
+     * @param ray       The original rook ray.
+     * @return The ray with the edge square removed.
+     */
     private static long getRookRayWithoutEdges(int square, int direction, long ray) {
         long rayWithoutEdges = ray;
 

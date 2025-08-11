@@ -486,12 +486,15 @@ public final class MoveGenerator {
 
     /**
      * Generates pseudo-legal moves for sliding pieces (Bishops, Rooks, Queens).
+     * Uses magic bitboards for efficient attack calculation.
      *
-     * @param rayLookup The lookup table for the piece type's rays.
-     * @param piece     The bitboard of the piece type.
-     * @param occupied  A bitboard of all occupied squares.
-     * @param ownPieces A bitboard of the current side's pieces.
-     * @param board     The current board state.
+     * @param isBishop      True for diagonal sliding (bishop), false for straight
+     *                      (rook).
+     * @param rayLookup     The lookup table for the piece type's rays without
+     *                      edges.
+     * @param pieceBitboard The bitboard of the piece type.
+     * @param occupied      A bitboard of all occupied squares.
+     * @param ownPieces     A bitboard of the current side's pieces.
      * @return An ArrayList of pseudo-legal sliding moves.
      */
     private static ArrayList<Move> getSlidingMoves(boolean isBishop, long[][] rayLookup, long pieceBitboard,
