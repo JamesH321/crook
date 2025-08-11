@@ -2,7 +2,20 @@ package com.github.jamesh321.chessengine;
 
 import java.util.Random;
 
+/**
+ * Implementation of magic bitboards for efficient sliding piece move
+ * generation.
+ * Magic bitboards use pre-computed magic numbers to quickly calculate bishop
+ * and rook
+ * attacks by hashing the relevant blocker patterns to attack lookup tables.
+ * This provides very fast move generation for bishops, rooks, and queens.
+ */
 public class MagicBitboards {
+    /**
+     * Pre-computed magic numbers for bishop attack calculations.
+     * Each magic number is specifically chosen to create a perfect hash
+     * for all possible blocker patterns on bishop diagonal rays.
+     */
     public static final long[] BISHOP_MAGICS = { 0x14180A1412420200L, 0x4180A024301E10D2L, 0x2C46E4CE0844901L,
             0x441004020024410L, 0x210020A024A09802L, 0x520198876B08082CL, 0x10E0911382012051L, 0x42508200808440C0L,
             0x2201B2101011503L, 0x459850100A830086L, 0x80400A9007120260L, 0x180A60A104240400L, 0x1E18800084041030L,
@@ -18,6 +31,11 @@ public class MagicBitboards {
             0x1C46282088010108L, 0xE540C608C200208L, 0xB959040B08940200L, 0x889540102013010L, 0xA860118410808041L,
             0x88A18020404022AL };
 
+    /**
+     * Pre-computed magic numbers for rook attack calculations.
+     * Each magic number is specifically chosen to create a perfect hash
+     * for all possible blocker patterns on rook straight rays.
+     */
     public static final long[] ROOK_MAGICS = { 0x4602D109A4814402L, 0x101948101201209CL, 0xA01004400080A09L,
             0x600305805204AL, 0x9001001000080521L, 0x2511402860010091L, 0x250400193028021L, 0x15038108E2004032L,
             0x8000840B05509200L, 0x1841D00601080400L, 0x243020004008080L, 0x6C11000801C500L, 0x81CCC80010068080L,
@@ -33,7 +51,18 @@ public class MagicBitboards {
             0x15000900A80C0006L, 0x320018220044E010L, 0x3D00046100500028L, 0x280200008801000L, 0xA4C000D002A00042L,
             0x8000C002908820L };
 
+    /**
+     * Pre-computed attack lookup tables for bishops.
+     * Indexed by [square][magic_index] where magic_index is computed
+     * using the blocker configuration and magic number.
+     */
     public static final long[][] BISHOP_ATTACKS = new long[64][];
+
+    /**
+     * Pre-computed attack lookup tables for rooks.
+     * Indexed by [square][magic_index] where magic_index is computed
+     * using the blocker configuration and magic number.
+     */
     public static final long[][] ROOK_ATTACKS = new long[64][];
 
     static {
@@ -41,7 +70,12 @@ public class MagicBitboards {
         initialiseAttacks(false, ROOK_ATTACKS);
     }
 
-    public static void findMagics() {
+    /**
+     * Finds and prints magic numbers for both bishops and rooks.
+     * This method is used for generating new magic numbers if needed.
+     * The generated magic numbers should be copied into the constants above.
+     */
+    private static void findMagics() {
         long[] bishopMagics = new long[64];
         long[] rookMagics = new long[64];
 
@@ -54,8 +88,18 @@ public class MagicBitboards {
         printMagics("rook", rookMagics);
     }
 
-    public static long findMagic(int square, boolean isBishop, long[] rays) {
-        long attackMask = getAttackMask(isBishop, square, rays);
+    /**
+     * Finds a magic number for a specific square and piece type.
+     * Uses a brute-force approach with random number generation to find
+     * a magic number that creates a perfect hash for all blocker patterns.
+     *
+     * @param square   The square to find a magic number for (0-63).
+     * @param isBishop True for bishop, false for rook.
+     * @param rays     The attack rays for the piece from this square.
+     * @return A magic number that works for this square and piece type.
+     */
+    private static long findMagic(int square, boolean isBishop, long[] rays) {
+        long attackMask = getAttackMask(square, rays);
         int shift = 64 - Long.bitCount(attackMask);
 
         long[] blockerCombinations = generateBlockerCombinations(attackMask);
@@ -89,6 +133,14 @@ public class MagicBitboards {
         }
     }
 
+    /**
+     * Initialises the attack lookup tables using the pre-computed magic numbers.
+     * This method populates the BISHOP_ATTACKS and ROOK_ATTACKS arrays with
+     * attack patterns for all possible blocker configurations.
+     *
+     * @param isBishop            True for bishop initialization, false for rook.
+     * @param slidingPieceAttacks The attack table to initialize.
+     */
     private static void initialiseAttacks(boolean isBishop, long[][] slidingPieceAttacks) {
         for (int square = 0; square < 64; square++) {
             long magicNumber = isBishop ? BISHOP_MAGICS[square] : ROOK_MAGICS[square];
@@ -96,7 +148,7 @@ public class MagicBitboards {
             long[] rays = isBishop ? LookupTables.BISHOP_RAYS_WITHOUT_EDGES[square]
                     : LookupTables.ROOK_RAYS_WITHOUT_EDGES[square];
 
-            long attackMask = getAttackMask(isBishop, square, rays);
+            long attackMask = getAttackMask(square, rays);
             int shift = 64 - Long.bitCount(attackMask);
 
             long[] blockerCombinations = generateBlockerCombinations(attackMask);
@@ -113,6 +165,12 @@ public class MagicBitboards {
         }
     }
 
+    /**
+     * Formats and prints magic numbers.
+     *
+     * @param piece        The piece type name for the output ("bishop" or "rook").
+     * @param magicNumbers Array of magic numbers to print.
+     */
     private static void printMagics(String piece, long[] magicNumbers) {
         System.out.printf("Magic numbers for %s:\n", piece);
         System.out.print("{ ");
@@ -126,6 +184,16 @@ public class MagicBitboards {
         System.out.print(" }\n\n");
     }
 
+    /**
+     * Calculates the attack patterns for each blocker combination on a square.
+     * For each possible arrangement of blocking pieces, determines which squares
+     * the sliding piece can attack before being blocked.
+     *
+     * @param square              The square the piece is on.
+     * @param isBishop            True for bishop, false for rook.
+     * @param blockerCombinations All possible blocker arrangements.
+     * @return Array of attack bitboards corresponding to each blocker combination.
+     */
     private static long[] getBlockerAttacks(int square, boolean isBishop, long[] blockerCombinations) {
         long[][] attackRays = isBishop ? LookupTables.BISHOP_RAYS : LookupTables.ROOK_RAYS;
         long[] blockerAttacks = new long[blockerCombinations.length];
@@ -162,6 +230,16 @@ public class MagicBitboards {
         return blockerAttacks;
     }
 
+    /**
+     * Generates all possible combinations of blocker pieces for a given attack
+     * mask.
+     * Each combination represents a different way pieces can be arranged on the
+     * relevant squares that could block the sliding piece's movement.
+     *
+     * @param attackMask Bitboard representing all squares that could contain
+     *                   blockers.
+     * @return Array of all possible blocker combinations.
+     */
     private static long[] generateBlockerCombinations(long attackMask) {
         int possibleCombinations = (int) Math.pow(2, Long.bitCount(attackMask));
         long[] blockerCombinations = new long[possibleCombinations];
@@ -184,7 +262,16 @@ public class MagicBitboards {
         return blockerCombinations;
     }
 
-    private static long getAttackMask(boolean isbishop, int square, long[] rays) {
+    /**
+     * Creates an attack mask by combining all attack rays for a piece.
+     * The attack mask represents all squares that are relevant for
+     * determining the piece's attack pattern.
+     *
+     * @param square The square the piece is on (currently unused).
+     * @param rays   Array of attack rays in all directions.
+     * @return Combined attack mask covering all relevant squares.
+     */
+    private static long getAttackMask(int square, long[] rays) {
         long attackMask = 0;
 
         for (int i = 0; i < 4; i++) {
@@ -194,6 +281,14 @@ public class MagicBitboards {
         return attackMask;
     }
 
+    /**
+     * Extracts the individual square indices from an attack mask.
+     * Converts a bitboard representation into an array of square numbers
+     * for easier iteration over the relevant squares.
+     *
+     * @param attackMask Bitboard representing the relevant squares.
+     * @return Array of square indices (0-63) for each set bit in the mask.
+     */
     private static int[] getPossibleBlockerSquares(long attackMask) {
         int numOfBlockerSquares = Long.bitCount(attackMask);
         int[] possibleBlockerSquares = new int[numOfBlockerSquares];
@@ -211,6 +306,12 @@ public class MagicBitboards {
         return possibleBlockerSquares;
     }
 
+    /**
+     * Main method for generating and displaying magic numbers.
+     * Run this method to generate new magic numbers if needed.
+     *
+     * @param args Command line arguments (unused).
+     */
     public static void main(String[] args) {
         findMagics();
     }
