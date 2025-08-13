@@ -125,19 +125,22 @@ public final class Uci {
         Move bestMove = null;
 
         for (int depth = 1; depth < 100; depth++) {
-            System.out.println("info depth " + depth);
+            HashMap<String, Object> bestMoveInfo = engine.findBestMove(depth, lastBestMove, endTime);
 
-            bestMove = engine.findBestMove(depth, lastBestMove, endTime);
+            bestMove = (Move) bestMoveInfo.get("best move");
+            long nodes = (long) bestMoveInfo.get("nodes");
+            long time = (long) bestMoveInfo.get("time");
+            long nps = (long) bestMoveInfo.get("nps");
+            int score = (int) bestMoveInfo.get("score");
 
-            if (bestMove == null) {
-                break;
-            }
-
-            if (System.currentTimeMillis() >= endTime) {
+            if (bestMove == null || System.currentTimeMillis() >= endTime) {
                 break;
             }
 
             lastBestMove = bestMove;
+
+            System.out.println("bestmove " + lastBestMove.toString());
+            System.out.printf("info depth %d nodes %d time %d nps %d score cp %d\n", depth, nodes, time, nps, score);
         }
 
         System.out.println("bestmove " + lastBestMove.toString());
