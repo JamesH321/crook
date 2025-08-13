@@ -11,9 +11,10 @@ import java.util.Collections;
  * pruning to improve search efficiency.
  */
 public class Search {
-    private Search() {
 
-    }
+    private long nodes = 0;
+    private long time;
+    private int score;
 
     /**
      * Finds the best move for the current player in the given position by searching
@@ -27,7 +28,9 @@ public class Search {
      * @return the best move found, or null if no legal moves exist, depth is 0, or
      *         time has expired
      */
-    public static Move findBestMove(int depth, Move lastBestMove, long endTime, Engine engine) {
+    public Move findBestMove(int depth, Move lastBestMove, long endTime, Engine engine) {
+        long startTime = System.currentTimeMillis();
+
         if (depth == 0) {
             return null;
         }
@@ -53,7 +56,7 @@ public class Search {
 
             engine.makeMove(move);
 
-            int score = -alphaBeta(depth - 1, -beta, -alpha, engine);
+            int score = -negaMax(depth - 1, -beta, -alpha, engine);
 
             engine.undoMove();
 
@@ -61,7 +64,12 @@ public class Search {
                 alpha = score;
                 bestMove = move;
             }
+
+            this.nodes += 1;
         }
+
+        this.score = alpha;
+        this.time = System.currentTimeMillis() - startTime;
 
         return bestMove;
     }
@@ -80,7 +88,7 @@ public class Search {
      * @param engine the chess engine containing the current game state
      * @return the evaluation score from the perspective of the current player
      */
-    public static int alphaBeta(int depth, int alpha, int beta, Engine engine) {
+    public int negaMax(int depth, int alpha, int beta, Engine engine) {
         if (depth == 0) {
             return Evaluate.board(engine.getBoard());
         }
@@ -102,9 +110,11 @@ public class Search {
         for (Move move : moves) {
             engine.makeMove(move);
 
-            int score = -alphaBeta(depth - 1, -beta, -alpha, engine);
+            int score = -negaMax(depth - 1, -beta, -alpha, engine);
 
             engine.undoMove();
+
+            this.nodes += 1;
 
             if (score >= beta) {
                 return beta;
@@ -124,11 +134,23 @@ public class Search {
      * @param board the chess board to analyze
      * @return true if the current player's king is in check, false otherwise
      */
-    private static boolean inCheck(Board board) {
+    private boolean inCheck(Board board) {
         long kingBitboard = board.isWhiteTurn() ? board.getBitboard(Piece.WHITE_KING)
                 : board.getBitboard(Piece.BLACK_KING);
         int kingSquare = Long.numberOfLeadingZeros(kingBitboard);
 
         return MoveGenerator.isSquareAttacked(kingSquare, board);
+    }
+
+    public long getNodes() {
+        return nodes;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public int getScore() {
+        return score;
     }
 }
