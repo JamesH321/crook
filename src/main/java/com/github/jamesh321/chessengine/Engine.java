@@ -1,6 +1,7 @@
 package com.github.jamesh321.chessengine;
 
 import java.util.Stack;
+import java.util.HashMap;
 
 /**
  * The Engine class manages the state of a chess game, including move execution
@@ -62,10 +63,31 @@ public class Engine {
      * @param lastBestMove the previously found best move to prioritise in move
      *                     ordering
      * @param endTime      the timestamp at which the search should terminate
-     * @return the best move found, or null if no legal moves exist, depth is 0, or
-     *         time has expired
+     * @return hashmap with the best move found, or null if no legal moves exist,
+     *         depth is 0, or
+     *         time has expired and other search information
      */
-    public Move findBestMove(int depth, Move lastBestMove, long endTime) {
-        return Search.findBestMove(depth, lastBestMove, endTime, this);
+    public HashMap<String, Object> findBestMove(int depth, Move lastBestMove, long endTime) {
+        Search search = new Search();
+
+        Move bestMove = search.findBestMove(depth, lastBestMove, endTime, this);
+        long nodes = search.getNodes();
+        long time = search.getTime();
+        long nps;
+        try {
+            nps = (long) (nodes / (time / 1000.0));
+        } catch (Exception e) {
+            nps = 0;
+        }
+        int score = search.getScore();
+
+        HashMap<String, Object> moveInfo = new HashMap<>();
+        moveInfo.put("best move", bestMove);
+        moveInfo.put("nodes", nodes);
+        moveInfo.put("time", time);
+        moveInfo.put("nps", nps);
+        moveInfo.put("score", score);
+
+        return moveInfo;
     }
 }
