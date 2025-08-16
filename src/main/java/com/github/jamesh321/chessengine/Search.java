@@ -28,7 +28,7 @@ public class Search {
      * @return the best move found, or null if no legal moves exist, depth is 0, or
      *         time has expired
      */
-    public Move findBestMove(int depth, Move lastBestMove, long endTime, Engine engine) {
+    public Move findBestMove(int depth, Move lastBestMove, Engine engine) {
         long startTime = System.currentTimeMillis();
 
         if (depth == 0) {
@@ -50,7 +50,7 @@ public class Search {
         }
 
         for (Move move : moves) {
-            if (System.currentTimeMillis() >= endTime) {
+            if (Thread.currentThread().isInterrupted()) {
                 return null;
             }
 
