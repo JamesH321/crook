@@ -115,7 +115,8 @@ public final class Uci implements Runnable {
 
     /**
      * Handles the 'go' command.
-     * Starts the search for the best move and outputs the result using iterative
+     * Creates a new thread and starts the search for the best move and outputs the
+     * result using iterative
      * deepening.
      * 
      * @param tokens the tokenised command string containing search parameters
@@ -164,6 +165,9 @@ public final class Uci implements Runnable {
         searchThread.start();
     }
 
+    /**
+     * Interrupts the current search thread.
+     */
     private static void stopCommand() {
         if (searchThread != null && searchThread.isAlive()) {
             searchThread.interrupt();

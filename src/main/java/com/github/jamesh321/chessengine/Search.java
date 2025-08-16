@@ -12,8 +12,19 @@ import java.util.Collections;
  */
 public class Search {
 
+    /**
+     * The total nodes visited in this search.
+     */
     private long nodes = 0;
+
+    /**
+     * The time taken for the search.
+     */
     private long time;
+
+    /**
+     * The score for the given position.
+     */
     private int score;
 
     /**

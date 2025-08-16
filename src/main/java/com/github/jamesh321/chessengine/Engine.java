@@ -63,8 +63,9 @@ public class Engine {
      * @param lastBestMove the previously found best move to prioritise in move
      *                     ordering
      * @param endTime      the timestamp at which the search should terminate
-     * @return the best move found, or null if no legal moves exist, depth is 0, or
-     *         time has expired
+     * @return hashmap with the best move found, or null if no legal moves exist,
+     *         depth is 0, or
+     *         time has expired and other search information
      */
     public HashMap<String, Object> findBestMove(int depth, Move lastBestMove, long endTime) {
         Search search = new Search();
