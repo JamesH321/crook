@@ -138,7 +138,7 @@ public final class Uci implements Runnable {
             Move bestMove = null;
 
             for (int depth = 1; depth < 100; depth++) {
-                HashMap<String, Object> bestMoveInfo = engine.findBestMove(depth, lastBestMove);
+                HashMap<String, Object> bestMoveInfo = engine.findBestMove(depth, lastBestMove, endTime);
 
                 bestMove = (Move) bestMoveInfo.get("best move");
                 long nodes = (long) bestMoveInfo.get("nodes");
