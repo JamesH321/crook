@@ -66,10 +66,10 @@ public class Engine {
      * @return the best move found, or null if no legal moves exist, depth is 0, or
      *         time has expired
      */
-    public HashMap<String, Object> findBestMove(int depth, Move lastBestMove) {
+    public HashMap<String, Object> findBestMove(int depth, Move lastBestMove, long endTime) {
         Search search = new Search();
 
-        Move bestMove = search.findBestMove(depth, lastBestMove, this);
+        Move bestMove = search.findBestMove(depth, lastBestMove, endTime, this);
         long nodes = search.getNodes();
         long time = search.getTime();
         long nps;
