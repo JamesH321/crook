@@ -11,9 +11,14 @@ import java.util.HashMap;
  * https://backscattering.de/chess/uci/
  * 
  */
-public final class Uci {
+public final class Uci implements Runnable {
+
+    public static Thread searchThread = null;
 
     private Uci() {
+    }
+
+    public void run() {
     }
 
     /**
@@ -62,6 +67,9 @@ public final class Uci {
             case "go":
                 goCommand(tokens, engine);
                 break;
+            case "stop":
+                stopCommand();
+                break;
             default:
                 break;
         }
@@ -73,7 +81,7 @@ public final class Uci {
      * supports UCI.
      */
     private static void uciCommand() {
-        String name = "Crook";
+        String name = "crook";
         String author = "James Hickson";
 
         System.out.printf("id name %s\n", name);
@@ -114,36 +122,52 @@ public final class Uci {
      * @param engine the chess engine to use for finding the best move
      */
     private static void goCommand(String[] tokens, Engine engine) {
-        HashMap<String, String> commands = processGoCommands(tokens);
-
-        long timeForMove = calculateMsecForMove(commands, engine);
-
-        long startTime = System.currentTimeMillis();
-        long endTime = startTime + timeForMove;
-
-        Move lastBestMove = null;
-        Move bestMove = null;
-
-        for (int depth = 1; depth < 100; depth++) {
-            HashMap<String, Object> bestMoveInfo = engine.findBestMove(depth, lastBestMove, endTime);
-
-            bestMove = (Move) bestMoveInfo.get("best move");
-            long nodes = (long) bestMoveInfo.get("nodes");
-            long time = (long) bestMoveInfo.get("time");
-            long nps = (long) bestMoveInfo.get("nps");
-            int score = (int) bestMoveInfo.get("score");
-
-            if (bestMove == null || System.currentTimeMillis() >= endTime) {
-                break;
-            }
-
-            lastBestMove = bestMove;
-
-            System.out.println("bestmove " + lastBestMove.toString());
-            System.out.printf("info depth %d nodes %d time %d nps %d score cp %d\n", depth, nodes, time, nps, score);
+        if (searchThread != null && searchThread.isAlive()) {
+            return;
         }
 
-        System.out.println("bestmove " + lastBestMove.toString());
+        searchThread = new Thread(() -> {
+            HashMap<String, String> commands = processGoCommands(tokens);
+
+            long timeForMove = calculateMsecForMove(commands, engine);
+
+            long startTime = System.currentTimeMillis();
+            long endTime = startTime + timeForMove;
+
+            Move lastBestMove = null;
+            Move bestMove = null;
+
+            for (int depth = 1; depth < 100; depth++) {
+                HashMap<String, Object> bestMoveInfo = engine.findBestMove(depth, lastBestMove);
+
+                bestMove = (Move) bestMoveInfo.get("best move");
+                long nodes = (long) bestMoveInfo.get("nodes");
+                long time = (long) bestMoveInfo.get("time");
+                long nps = (long) bestMoveInfo.get("nps");
+                int score = (int) bestMoveInfo.get("score");
+
+                if (bestMove == null || System.currentTimeMillis() >= endTime) {
+                    break;
+                }
+
+                lastBestMove = bestMove;
+
+                System.out.printf("info depth %d nodes %d time %d nps %d score cp %d\n", depth, nodes, time, nps,
+                        score);
+            }
+
+            System.out.println("bestmove " + lastBestMove.toString());
+
+            searchThread = null;
+        });
+
+        searchThread.start();
+    }
+
+    private static void stopCommand() {
+        if (searchThread != null && searchThread.isAlive()) {
+            searchThread.interrupt();
+        }
     }
 
     /**
