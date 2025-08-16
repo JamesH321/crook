@@ -1,7 +1,8 @@
-package com.github.jamesh321.chessengine;
+package com.github.jamesh321.crook;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BoardTest {

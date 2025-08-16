@@ -1,4 +1,4 @@
-package com.github.jamesh321.chessengine;
+package com.github.jamesh321.crook;
 
 /**
  * A utility class for displaying the chess board in the console.

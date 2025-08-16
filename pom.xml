@@ -4,11 +4,11 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.github.jamesh321.chessengine</groupId>
-  <artifactId>chess-engine</artifactId>
+  <groupId>com.github.jamesh321.crook</groupId>
+  <artifactId>crook</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>chess-engine</name>
+  <name>crook</name>
   <url>http://www.example.com</url>
 
   <properties>
@@ -56,7 +56,7 @@
           <configuration>
             <archive>
               <manifest>
-                <mainClass>com.github.jamesh321.chessengine.Uci</mainClass>
+                <mainClass>com.github.jamesh321.crook.Uci</mainClass>
               </manifest>
             </archive>
           </configuration>
