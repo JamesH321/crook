@@ -1,4 +1,4 @@
-package com.github.jamesh321.chessengine;
+package com.github.jamesh321.crook;
 
 /**
  * Generates and stores tables for each piece that contain all the possible

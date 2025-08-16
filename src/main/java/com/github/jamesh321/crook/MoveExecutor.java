@@ -1,4 +1,4 @@
-package com.github.jamesh321.chessengine;
+package com.github.jamesh321.crook;
 
 /**
  * Provides static methods to execute chess moves on a {@link Board} object.

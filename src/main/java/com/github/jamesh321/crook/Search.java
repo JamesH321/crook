@@ -1,4 +1,4 @@
-package com.github.jamesh321.chessengine;
+package com.github.jamesh321.crook;
 
 import java.util.ArrayList;
 import java.util.Collections;

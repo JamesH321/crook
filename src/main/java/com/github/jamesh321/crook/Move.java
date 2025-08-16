@@ -1,4 +1,4 @@
-package com.github.jamesh321.chessengine;
+package com.github.jamesh321.crook;
 
 /**
  * Represents a chess move encoded as a 16 bit integer with the following
