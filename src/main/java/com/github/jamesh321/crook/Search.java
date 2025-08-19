@@ -1,7 +1,7 @@
 package com.github.jamesh321.crook;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 
 /**
  * The Search class implements chess position analysis algorithms to find the
@@ -52,13 +52,11 @@ public class Search {
 
         ArrayList<Move> moves = MoveGenerator.generateLegalMoves(engine.getBoard());
 
-        if (lastBestMove != null) {
-            Collections.swap(moves, 0, moves.indexOf(lastBestMove));
-        }
-
         if (moves.isEmpty() || engine.getBoard().getHalfmoveClock() == 100) {
             return null;
         }
+
+        moves = orderMoves(moves, lastBestMove, engine.getBoard());
 
         for (Move move : moves) {
             if (Thread.currentThread().isInterrupted() || System.currentTimeMillis() >= endTime) {
@@ -118,6 +116,8 @@ public class Search {
             return 0;
         }
 
+        moves = orderMoves(moves, null, engine.getBoard());
+
         for (Move move : moves) {
             engine.makeMove(move);
 
@@ -151,6 +151,80 @@ public class Search {
         int kingSquare = Long.numberOfLeadingZeros(kingBitboard);
 
         return MoveGenerator.isSquareAttacked(kingSquare, board);
+    }
+
+    private ArrayList<Move> orderMoves(ArrayList<Move> moves, Move lastBestMove, Board board) {
+        ArrayList<Move> orderedMoves = new ArrayList<>();
+
+        orderedMoves = mvvMinusLva(moves, board);
+
+        if (lastBestMove != null) {
+            orderedMoves.remove(lastBestMove);
+            orderedMoves.addFirst(lastBestMove);
+        }
+
+        return orderedMoves;
+    }
+
+    private ArrayList<Move> mvvMinusLva(ArrayList<Move> moves, Board board) {
+        ArrayList<Move> orderedMoves = new ArrayList<>();
+
+        ArrayList<Move> attackingMoves = getAttackingMoves(moves, board);
+        ArrayList<Integer> victimSquares = getVictimSquares(attackingMoves, board);
+
+        HashMap<Move, Integer> captureMoveScores = new HashMap<>();
+
+        for (int i = 0; i < attackingMoves.size(); i++) {
+            int attackerValue = getPieceValue(attackingMoves.get(i).getFrom(), board);
+            int victimValue = getPieceValue(victimSquares.get(i), board);
+            int captureScore = victimValue - attackerValue;
+
+            captureMoveScores.put(attackingMoves.get(i), captureScore);
+        }
+
+        attackingMoves.sort((a, b) -> Integer.compare(captureMoveScores.get(b), captureMoveScores.get(a)));
+        orderedMoves.addAll(attackingMoves);
+
+        moves.removeAll(attackingMoves);
+        orderedMoves.addAll(moves);
+
+        return orderedMoves;
+    }
+
+    private ArrayList<Move> getAttackingMoves(ArrayList<Move> moves, Board board) {
+        ArrayList<Move> attackingMoves = new ArrayList<>();
+
+        long opponentSquares = board.isWhiteTurn() ? board.getBlackPieces() : board.getWhitePieces();
+
+        for (Move move : moves) {
+            if ((opponentSquares & LookupTables.BITBOARD_SQUARES[move.getTo()]) != 0) {
+                attackingMoves.add(move);
+            }
+        }
+
+        return attackingMoves;
+    }
+
+    private ArrayList<Integer> getVictimSquares(ArrayList<Move> attackingMoves, Board board) {
+        ArrayList<Integer> victimSquares = new ArrayList<>();
+
+        for (Move move : attackingMoves) {
+            victimSquares.add(move.getTo());
+        }
+
+        return victimSquares;
+    }
+
+    private int getPieceValue(int square, Board board) {
+        int[] values = { 100, 300, 300, 500, 900, 10000 };
+
+        for (Piece piece : Piece.values()) {
+            if ((board.getBitboard(piece) & LookupTables.BITBOARD_SQUARES[square]) != 0) {
+                return values[piece.getIndex() % 6];
+            }
+        }
+
+        return -1;
     }
 
     public long getNodes() {
