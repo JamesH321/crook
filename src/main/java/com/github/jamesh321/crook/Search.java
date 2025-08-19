@@ -170,13 +170,12 @@ public class Search {
         ArrayList<Move> orderedMoves = new ArrayList<>();
 
         ArrayList<Move> attackingMoves = getAttackingMoves(moves, board);
-        ArrayList<Integer> victimSquares = getVictimSquares(attackingMoves, board);
 
         HashMap<Move, Integer> captureMoveScores = new HashMap<>();
 
         for (int i = 0; i < attackingMoves.size(); i++) {
             int attackerValue = getPieceValue(attackingMoves.get(i).getFrom(), board);
-            int victimValue = getPieceValue(victimSquares.get(i), board);
+            int victimValue = getPieceValue(attackingMoves.get(i).getTo(), board);
             int captureScore = victimValue - attackerValue;
 
             captureMoveScores.put(attackingMoves.get(i), captureScore);
@@ -203,16 +202,6 @@ public class Search {
         }
 
         return attackingMoves;
-    }
-
-    private ArrayList<Integer> getVictimSquares(ArrayList<Move> attackingMoves, Board board) {
-        ArrayList<Integer> victimSquares = new ArrayList<>();
-
-        for (Move move : attackingMoves) {
-            victimSquares.add(move.getTo());
-        }
-
-        return victimSquares;
     }
 
     private int getPieceValue(int square, Board board) {
