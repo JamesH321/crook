@@ -156,7 +156,7 @@ public class Search {
     private ArrayList<Move> orderMoves(ArrayList<Move> moves, Move lastBestMove, Board board) {
         ArrayList<Move> orderedMoves = new ArrayList<>();
 
-        orderedMoves = mvvMinusLva(moves, board);
+        orderedMoves = orderByMvvMinusLva(moves, board);
 
         if (lastBestMove != null) {
             orderedMoves.remove(lastBestMove);
@@ -166,54 +166,69 @@ public class Search {
         return orderedMoves;
     }
 
-    private ArrayList<Move> mvvMinusLva(ArrayList<Move> moves, Board board) {
+    private ArrayList<Move> orderByMvvMinusLva(ArrayList<Move> moves, Board board) {
         ArrayList<Move> orderedMoves = new ArrayList<>();
 
-        ArrayList<Move> attackingMoves = getAttackingMoves(moves, board);
-
+        ArrayList<Move> nonAttackingMoves = new ArrayList<>();
         HashMap<Move, Integer> captureMoveScores = new HashMap<>();
-
-        for (int i = 0; i < attackingMoves.size(); i++) {
-            int attackerValue = getPieceValue(attackingMoves.get(i).getFrom(), board);
-            int victimValue = getPieceValue(attackingMoves.get(i).getTo(), board);
-            int captureScore = victimValue - attackerValue;
-
-            captureMoveScores.put(attackingMoves.get(i), captureScore);
-        }
-
-        attackingMoves.sort((a, b) -> Integer.compare(captureMoveScores.get(b), captureMoveScores.get(a)));
-        orderedMoves.addAll(attackingMoves);
-
-        moves.removeAll(attackingMoves);
-        orderedMoves.addAll(moves);
-
-        return orderedMoves;
-    }
-
-    private ArrayList<Move> getAttackingMoves(ArrayList<Move> moves, Board board) {
-        ArrayList<Move> attackingMoves = new ArrayList<>();
 
         long opponentSquares = board.isWhiteTurn() ? board.getBlackPieces() : board.getWhitePieces();
 
         for (Move move : moves) {
             if ((opponentSquares & LookupTables.BITBOARD_SQUARES[move.getTo()]) != 0) {
-                attackingMoves.add(move);
+                captureMoveScores.put(move, mvvMinusLva(move, board));
+            } else {
+                nonAttackingMoves.add(move);
             }
         }
 
-        return attackingMoves;
+        ArrayList<Move> attackingMoves = new ArrayList<>(captureMoveScores.keySet());
+        attackingMoves.sort((a, b) -> Integer.compare(captureMoveScores.get(b), captureMoveScores.get(a)));
+
+        orderedMoves.addAll(attackingMoves);
+        orderedMoves.addAll(nonAttackingMoves);
+
+        return orderedMoves;
     }
 
-    private int getPieceValue(int square, Board board) {
-        int[] values = { 100, 300, 300, 500, 900, 10000 };
+    private int mvvMinusLva(Move move, Board board) {
+        Piece attackerPiece = board.getPieceAtSquare(move.getFrom());
+        Piece victimPiece = board.getPieceAtSquare(move.getTo());
 
-        for (Piece piece : Piece.values()) {
-            if ((board.getBitboard(piece) & LookupTables.BITBOARD_SQUARES[square]) != 0) {
-                return values[piece.getIndex() % 6];
-            }
+        // Handle en passant capture
+        if (move.getFlag() == Move.EN_PASSANT) {
+            victimPiece = board.isWhiteTurn() ? Piece.BLACK_PAWN : Piece.WHITE_PAWN;
         }
 
-        return -1;
+        int attackerValue = getPieceValue(attackerPiece);
+        int victimValue = getPieceValue(victimPiece);
+
+        return victimValue - attackerValue;
+    }
+
+    private int getPieceValue(Piece piece) {
+        switch (piece) {
+            case WHITE_PAWN:
+            case BLACK_PAWN:
+                return Evaluate.PAWN_VALUE;
+            case WHITE_KNIGHT:
+            case BLACK_KNIGHT:
+                return Evaluate.KNIGHT_VALUE;
+            case WHITE_BISHOP:
+            case BLACK_BISHOP:
+                return Evaluate.BISHOP_VALUE;
+            case WHITE_ROOK:
+            case BLACK_ROOK:
+                return Evaluate.ROOK_VALUE;
+            case WHITE_QUEEN:
+            case BLACK_QUEEN:
+                return Evaluate.QUEEN_VALUE;
+            case WHITE_KING:
+            case BLACK_KING:
+                return Evaluate.KING_VALUE;
+            default:
+                return 0;
+        }
     }
 
     public long getNodes() {
