@@ -68,9 +68,9 @@ public class Engine {
      *         time has expired and other search information
      */
     public HashMap<String, Object> findBestMove(int depth, Move lastBestMove, long endTime) {
-        Search search = new Search();
+        Search search = new Search(depth, endTime, lastBestMove, this);
 
-        Move bestMove = search.findBestMove(depth, lastBestMove, endTime, this);
+        Move bestMove = search.findBestMove();
         long nodes = search.getNodes();
         long time = search.getTime();
         long nps;
