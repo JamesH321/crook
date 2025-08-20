@@ -12,6 +12,16 @@ import java.util.HashMap;
  */
 public class Search {
 
+    private int depth;
+
+    private long endTime;
+
+    private Move lastBestMove;
+
+    private Engine engine;
+
+    private Board board;
+
     /**
      * The total nodes visited in this search.
      */
@@ -27,6 +37,14 @@ public class Search {
      */
     private int score;
 
+    public Search(int depth, long endTime, Move lastBestMove, Engine engine) {
+        this.depth = depth;
+        this.endTime = endTime;
+        this.lastBestMove = lastBestMove;
+        this.engine = engine;
+        this.board = engine.getBoard();
+    }
+
     /**
      * Finds the best move for the current player in the given position by searching
      * to the specified depth using the negamax algorithm with alpha-beta pruning.
@@ -39,7 +57,7 @@ public class Search {
      * @return the best move found, or null if no legal moves exist, depth is 0, or
      *         time has expired
      */
-    public Move findBestMove(int depth, Move lastBestMove, long endTime, Engine engine) {
+    public Move findBestMove() {
         long startTime = System.currentTimeMillis();
 
         if (depth == 0) {
@@ -50,13 +68,13 @@ public class Search {
         int alpha = -100000;
         int beta = 100000;
 
-        ArrayList<Move> moves = MoveGenerator.generateLegalMoves(engine.getBoard());
+        ArrayList<Move> moves = MoveGenerator.generateLegalMoves(board);
 
-        if (moves.isEmpty() || engine.getBoard().getHalfmoveClock() == 100) {
+        if (moves.isEmpty() || board.getHalfmoveClock() == 100) {
             return null;
         }
 
-        moves = orderMoves(moves, lastBestMove, engine.getBoard());
+        moves = orderMoves(moves);
 
         for (Move move : moves) {
             if (Thread.currentThread().isInterrupted() || System.currentTimeMillis() >= endTime) {
@@ -65,7 +83,7 @@ public class Search {
 
             engine.makeMove(move);
 
-            int score = -negaMax(depth - 1, -beta, -alpha, engine);
+            int score = -negaMax(depth - 1, -beta, -alpha);
 
             engine.undoMove();
 
@@ -97,31 +115,31 @@ public class Search {
      * @param engine the chess engine containing the current game state
      * @return the evaluation score from the perspective of the current player
      */
-    public int negaMax(int depth, int alpha, int beta, Engine engine) {
+    public int negaMax(int depth, int alpha, int beta) {
         if (depth == 0) {
-            return Evaluate.board(engine.getBoard());
+            return Evaluate.board(board);
         }
 
-        ArrayList<Move> moves = MoveGenerator.generateLegalMoves(engine.getBoard());
+        ArrayList<Move> moves = MoveGenerator.generateLegalMoves(board);
 
         if (moves.isEmpty()) {
-            if (inCheck(engine.getBoard())) {
+            if (inCheck()) {
                 return -100000;
             } else {
                 return 0;
             }
         }
 
-        if (engine.getBoard().getHalfmoveClock() == 100) {
+        if (board.getHalfmoveClock() == 100) {
             return 0;
         }
 
-        moves = orderMoves(moves, null, engine.getBoard());
+        moves = orderMoves(moves);
 
         for (Move move : moves) {
             engine.makeMove(move);
 
-            int score = -negaMax(depth - 1, -beta, -alpha, engine);
+            int score = -negaMax(depth - 1, -beta, -alpha);
 
             engine.undoMove();
 
@@ -145,7 +163,7 @@ public class Search {
      * @param board the chess board to analyze
      * @return true if the current player's king is in check, false otherwise
      */
-    private boolean inCheck(Board board) {
+    private boolean inCheck() {
         long kingBitboard = board.isWhiteTurn() ? board.getBitboard(Piece.WHITE_KING)
                 : board.getBitboard(Piece.BLACK_KING);
         int kingSquare = Long.numberOfLeadingZeros(kingBitboard);
@@ -153,20 +171,21 @@ public class Search {
         return MoveGenerator.isSquareAttacked(kingSquare, board);
     }
 
-    private ArrayList<Move> orderMoves(ArrayList<Move> moves, Move lastBestMove, Board board) {
+    private ArrayList<Move> orderMoves(ArrayList<Move> moves) {
         ArrayList<Move> orderedMoves = new ArrayList<>();
 
-        orderedMoves = orderByMvvMinusLva(moves, board);
+        orderedMoves = orderByMvvMinusLva(moves);
 
         if (lastBestMove != null) {
             orderedMoves.remove(lastBestMove);
             orderedMoves.addFirst(lastBestMove);
+            this.lastBestMove = null;
         }
 
         return orderedMoves;
     }
 
-    private ArrayList<Move> orderByMvvMinusLva(ArrayList<Move> moves, Board board) {
+    private ArrayList<Move> orderByMvvMinusLva(ArrayList<Move> moves) {
         ArrayList<Move> orderedMoves = new ArrayList<>();
 
         ArrayList<Move> nonAttackingMoves = new ArrayList<>();
@@ -176,7 +195,7 @@ public class Search {
 
         for (Move move : moves) {
             if ((opponentSquares & LookupTables.BITBOARD_SQUARES[move.getTo()]) != 0) {
-                captureMoveScores.put(move, mvvMinusLva(move, board));
+                captureMoveScores.put(move, mvvMinusLva(move));
             } else {
                 nonAttackingMoves.add(move);
             }
@@ -191,7 +210,7 @@ public class Search {
         return orderedMoves;
     }
 
-    private int mvvMinusLva(Move move, Board board) {
+    private int mvvMinusLva(Move move) {
         Piece attackerPiece = board.getPieceAtSquare(move.getFrom());
         Piece victimPiece = board.getPieceAtSquare(move.getTo());
 
