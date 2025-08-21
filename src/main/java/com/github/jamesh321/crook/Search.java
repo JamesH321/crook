@@ -162,22 +162,10 @@ public class Search {
     }
 
     private void addKillerMove(Move move) {
-        if (!isFull(killerMoves[depth])) {
-            if (killerMoves[depth][0] != move && killerMoves[depth][1] != move) {
-                killerMoves[depth][1] = killerMoves[depth][0];
-                killerMoves[depth][0] = move;
-            }
+        if (killerMoves[depth][0] != move && killerMoves[depth][1] != move) {
+            killerMoves[depth][1] = killerMoves[depth][0];
+            killerMoves[depth][0] = move;
         }
-    }
-
-    private boolean isFull(Move[] moves) {
-        for (Move move : moves) {
-            if (move == null) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
