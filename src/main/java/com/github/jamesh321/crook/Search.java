@@ -22,6 +22,8 @@ public class Search {
 
     private Board board;
 
+    private Move[][] killerMoves;
+
     /**
      * The total nodes visited in this search.
      */
@@ -43,6 +45,7 @@ public class Search {
         this.lastBestMove = lastBestMove;
         this.engine = engine;
         this.board = engine.getBoard();
+        this.killerMoves = new Move[depth + 1][2];
     }
 
     /**
@@ -146,6 +149,7 @@ public class Search {
             this.nodes += 1;
 
             if (score >= beta) {
+                addKillerMove(move);
                 return beta;
             }
 
@@ -155,6 +159,25 @@ public class Search {
         }
 
         return alpha;
+    }
+
+    private void addKillerMove(Move move) {
+        if (!isFull(killerMoves[depth])) {
+            if (killerMoves[depth][0] != move && killerMoves[depth][1] != move) {
+                killerMoves[depth][1] = killerMoves[depth][0];
+                killerMoves[depth][0] = move;
+            }
+        }
+    }
+
+    private boolean isFull(Move[] moves) {
+        for (Move move : moves) {
+            if (move == null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -174,7 +197,8 @@ public class Search {
     private ArrayList<Move> orderMoves(ArrayList<Move> moves) {
         ArrayList<Move> orderedMoves = new ArrayList<>();
 
-        orderedMoves = orderByMvvMinusLva(moves);
+        orderedMoves = orderKillerMoves(moves);
+        orderedMoves = orderCaptures(orderedMoves);
 
         if (lastBestMove != null) {
             orderedMoves.remove(lastBestMove);
@@ -185,7 +209,22 @@ public class Search {
         return orderedMoves;
     }
 
-    private ArrayList<Move> orderByMvvMinusLva(ArrayList<Move> moves) {
+    private ArrayList<Move> orderKillerMoves(ArrayList<Move> moves) {
+        ArrayList<Move> orderedMoves = new ArrayList<>();
+
+        for (Move move : killerMoves[depth]) {
+            if (moves.contains(move)) {
+                orderedMoves.add(move);
+                moves.remove(move);
+            }
+        }
+
+        orderedMoves.addAll(moves);
+
+        return orderedMoves;
+    }
+
+    private ArrayList<Move> orderCaptures(ArrayList<Move> moves) {
         ArrayList<Move> orderedMoves = new ArrayList<>();
 
         ArrayList<Move> nonAttackingMoves = new ArrayList<>();
