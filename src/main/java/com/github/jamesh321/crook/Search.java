@@ -33,11 +33,12 @@ public class Search {
      *
      * @param depth        the depth to search to (number of half-moves)
      * @param lastBestMove the previously found best move to prioritise in move
-     *                     ordering
-     * @param endTime      the timestamp at which the search should terminate
+     *                     ordering; may be null
+     * @param endTime      the epoch time in milliseconds at which the search should
+     *                     terminate
      * @param engine       the chess engine containing the current game state
      * @return the best move found, or null if no legal moves exist, depth is 0, or
-     *         time has expired
+     *         time has expired/interrupted
      */
     public Move findBestMove(int depth, Move lastBestMove, long endTime, Engine engine) {
         long startTime = System.currentTimeMillis();
@@ -67,9 +68,13 @@ public class Search {
 
             engine.makeMove(move);
 
-            int score = -negaMax(depth - 1, -beta, -alpha, engine);
+            int score = -negaMax(depth - 1, -beta, -alpha, endTime, engine);
 
             engine.undoMove();
+
+            if (score == 12345) {
+                return null;
+            }
 
             if (score > alpha) {
                 alpha = score;
@@ -93,13 +98,16 @@ public class Search {
      * simplifying the implementation by always maximizing from the current player's
      * perspective.
      *
-     * @param depth  the remaining depth to search
-     * @param alpha  the alpha value for alpha-beta pruning
-     * @param beta   the beta value for alpha-beta pruning
-     * @param engine the chess engine containing the current game state
-     * @return the evaluation score from the perspective of the current player
+     * @param depth   the remaining depth to search (number of half-moves)
+     * @param alpha   the alpha value for alpha-beta pruning
+     * @param beta    the beta value for alpha-beta pruning
+     * @param endTime the epoch time in milliseconds at which the search should
+     *                terminate
+     * @param engine  the chess engine containing the current game state
+     * @return the evaluation score from the perspective of the current player;
+     *         returns 12345 if time expired
      */
-    public int negaMax(int depth, int alpha, int beta, Engine engine) {
+    public int negaMax(int depth, int alpha, int beta, long endTime, Engine engine) {
         if (depth == 0) {
             return Evaluate.board(engine.getBoard());
         }
@@ -119,9 +127,13 @@ public class Search {
         }
 
         for (Move move : moves) {
+            if (System.currentTimeMillis() >= endTime) {
+                return 12345;
+            }
+
             engine.makeMove(move);
 
-            int score = -negaMax(depth - 1, -beta, -alpha, engine);
+            int score = -negaMax(depth - 1, -beta, -alpha, endTime, engine);
 
             engine.undoMove();
 
