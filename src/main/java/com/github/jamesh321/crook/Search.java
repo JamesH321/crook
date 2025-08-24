@@ -67,9 +67,13 @@ public class Search {
 
             engine.makeMove(move);
 
-            int score = -negaMax(depth - 1, -beta, -alpha, engine);
+            int score = -negaMax(depth - 1, -beta, -alpha, endTime, engine);
 
             engine.undoMove();
+
+            if (score == 12345) {
+                return null;
+            }
 
             if (score > alpha) {
                 alpha = score;
@@ -99,7 +103,7 @@ public class Search {
      * @param engine the chess engine containing the current game state
      * @return the evaluation score from the perspective of the current player
      */
-    public int negaMax(int depth, int alpha, int beta, Engine engine) {
+    public int negaMax(int depth, int alpha, int beta, long endTime, Engine engine) {
         if (depth == 0) {
             return Evaluate.board(engine.getBoard());
         }
@@ -119,9 +123,13 @@ public class Search {
         }
 
         for (Move move : moves) {
+            if (System.currentTimeMillis() >= endTime) {
+                return 12345;
+            }
+
             engine.makeMove(move);
 
-            int score = -negaMax(depth - 1, -beta, -alpha, engine);
+            int score = -negaMax(depth - 1, -beta, -alpha, endTime, engine);
 
             engine.undoMove();
 
