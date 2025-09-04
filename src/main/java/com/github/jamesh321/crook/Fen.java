@@ -97,7 +97,7 @@ public final class Fen {
      * @param board the board to load the turn to
      */
     private static void setTurn(String turn, Board board) {
-        board.setWhiteTurn(turn.equals("w") ? true : false);
+        board.setWhiteTurn(turn.equals("w"));
     }
 
     /**
