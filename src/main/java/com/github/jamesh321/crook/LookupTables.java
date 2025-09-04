@@ -135,12 +135,7 @@ public final class LookupTables {
      * every square in all four diagonal directions.
      */
     private static void initialiseBishop() {
-        for (int square = 0; square < 64; square++) {
-            BISHOP_RAYS[square][NE] = generateRay(square, NE, DIAGONAL_DIRECTION);
-            BISHOP_RAYS[square][NW] = generateRay(square, NW, DIAGONAL_DIRECTION);
-            BISHOP_RAYS[square][SE] = generateRay(square, SE, DIAGONAL_DIRECTION);
-            BISHOP_RAYS[square][SW] = generateRay(square, SW, DIAGONAL_DIRECTION);
-        }
+        initialiseRays(BISHOP_RAYS, new int[] { NE, NW, SE, SW }, DIAGONAL_DIRECTION);
     }
 
     /**
@@ -165,12 +160,7 @@ public final class LookupTables {
      * every square in all four straight directions.
      */
     private static void initialiseRook() {
-        for (int square = 0; square < 64; square++) {
-            ROOK_RAYS[square][N] = generateRay(square, N, STRAIGHT_DIRECTION);
-            ROOK_RAYS[square][E] = generateRay(square, E, STRAIGHT_DIRECTION);
-            ROOK_RAYS[square][S] = generateRay(square, S, STRAIGHT_DIRECTION);
-            ROOK_RAYS[square][W] = generateRay(square, W, STRAIGHT_DIRECTION);
-        }
+        initialiseRays(ROOK_RAYS, new int[] { N, E, S, W }, STRAIGHT_DIRECTION);
     }
 
     /**
@@ -187,6 +177,15 @@ public final class LookupTables {
                     generateRay(square, S, STRAIGHT_DIRECTION));
             ROOK_RAYS_WITHOUT_EDGES[square][W] = getRookRayWithoutEdges(square, W,
                     generateRay(square, W, STRAIGHT_DIRECTION));
+        }
+    }
+
+    private static void initialiseRays(long[][] raysToInitialise, int[] directions, int[][] directionArray) {
+        for (int square = 0; square < 64; square++) {
+            raysToInitialise[square] = new long[directions.length];
+            for (int i = 0; i < directions.length; i++) {
+                raysToInitialise[square][i] = generateRay(square, directions[i], directionArray);
+            }
         }
     }
 
