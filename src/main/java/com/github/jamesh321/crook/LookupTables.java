@@ -190,11 +190,11 @@ public final class LookupTables {
     }
 
     /**
-     * Generates all of the moves for a piece based in a given direction.
+     * Generates all the moves for a piece based in a given direction.
      * 
      * @param square     the square the moves are from
      * @param directions 2d array with the directions of each possible move
-     * @return bitboard with all of the possible moves from the given square
+     * @return bitboard with all the possible moves from the given square
      */
     private static long generateMovesForDirections(int square, int[][] directions) {
         int file = square % 8;
@@ -217,7 +217,7 @@ public final class LookupTables {
      * @param square         the square the moves are from
      * @param direction      the direction the ray is in
      * @param directionArray 2d array with the directions of each possible move
-     * @return bitboard with all of the possible moves from the given square
+     * @return bitboard with all the possible moves from the given square
      */
     private static long generateRay(int square, int direction, int[][] directionArray) {
         int file = square % 8;
