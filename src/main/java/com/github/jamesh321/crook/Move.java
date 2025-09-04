@@ -14,10 +14,9 @@ package com.github.jamesh321.crook;
  * within the engine.
  */
 public class Move {
-    private int data;
+    private final int data;
 
     private final int TO_FROM_MASK = 0b111111;
-    private final int FLAG_MASK = 0b1111;
 
     /**
      * A flag for a normal move.
@@ -74,10 +73,6 @@ public class Move {
         this.data = getMoveFromString(move, board);
     }
 
-    public int getData() {
-        return data;
-    }
-
     public int getFrom() {
         return data & TO_FROM_MASK;
     }
@@ -87,6 +82,7 @@ public class Move {
     }
 
     public int getFlag() {
+        int FLAG_MASK = 0b1111;
         return (data >>> 12) & FLAG_MASK;
     }
 
@@ -209,7 +205,7 @@ public class Move {
         }
 
         // Check for en passant
-        if (isEnPassantMove(from, to, piece, board)) {
+        if (isEnPassantMove(to, piece, board)) {
             flag = EN_PASSANT;
         }
 
@@ -227,18 +223,13 @@ public class Move {
      *                                  piece
      */
     private int getPromotionFlag(char promotionChar) {
-        switch (promotionChar) {
-            case 'q':
-                return QUEEN_PROMOTION;
-            case 'r':
-                return ROOK_PROMOTION;
-            case 'b':
-                return BISHOP_PROMOTION;
-            case 'n':
-                return KNIGHT_PROMOTION;
-            default:
-                throw new IllegalArgumentException("Invalid promotion piece: " + promotionChar);
-        }
+        return switch (promotionChar) {
+            case 'q' -> QUEEN_PROMOTION;
+            case 'r' -> ROOK_PROMOTION;
+            case 'b' -> BISHOP_PROMOTION;
+            case 'n' -> KNIGHT_PROMOTION;
+            default -> throw new IllegalArgumentException("Invalid promotion piece: " + promotionChar);
+        };
     }
 
     /**
@@ -259,13 +250,12 @@ public class Move {
      * Determines if the move is an en passant capture.
      * An en passant move occurs when a pawn moves to the en passant square.
      * 
-     * @param from  the source square index (0-63)
      * @param to    the destination square index (0-63)
      * @param piece the piece being moved
      * @param board the current chess board state
      * @return true if the move is an en passant capture, false otherwise
      */
-    private boolean isEnPassantMove(int from, int to, Piece piece, Board board) {
+    private boolean isEnPassantMove(int to, Piece piece, Board board) {
         return to == board.getEnPassantSquare() &&
                 (piece == Piece.WHITE_PAWN || piece == Piece.BLACK_PAWN);
     }
@@ -299,24 +289,13 @@ public class Move {
         String fromRank = Integer.toString(8 - (getFrom() / 8));
         String toFile = Character.toString((char) (getTo() % 8) + 'a');
         String toRank = Integer.toString(8 - (getTo() / 8));
-        String promotionPiece;
-        switch (getFlag()) {
-            case 1:
-                promotionPiece = "q";
-                break;
-            case 5:
-                promotionPiece = "r";
-                break;
-            case 9:
-                promotionPiece = "b";
-                break;
-            case 13:
-                promotionPiece = "n";
-                break;
-            default:
-                promotionPiece = "";
-                break;
-        }
+        String promotionPiece = switch (getFlag()) {
+            case 1 -> "q";
+            case 5 -> "r";
+            case 9 -> "b";
+            case 13 -> "n";
+            default -> "";
+        };
 
         return fromFile + fromRank + toFile + toRank + promotionPiece;
     }
