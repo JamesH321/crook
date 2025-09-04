@@ -31,7 +31,7 @@ public final class Display {
      * @return A string representing the board.
      */
     private static String formatBoard(Board board) {
-        String boardString = "";
+        StringBuilder boardString = new StringBuilder();
         for (int square = 0; square < 64; square++) {
             int file = square % 8;
             int rank = 8 - (square / 8);
@@ -44,16 +44,16 @@ public final class Display {
             }
 
             if (file == 0) {
-                boardString += String.format("%d   |", rank);
+                boardString.append(String.format("%d   |", rank));
             }
 
-            boardString += pieceIndex != -1 ? String.format(" %c |", PIECES[pieceIndex]) : "   |";
+            boardString.append(pieceIndex != -1 ? String.format(" %c |", PIECES[pieceIndex]) : "   |");
 
             if (file == 7 && rank != 1) {
-                boardString += String.format("   %d\n", rank);
-                boardString += "    +---+---+---+---+---+---+---+---+\n";
+                boardString.append(String.format("   %d\n", rank));
+                boardString.append("    +---+---+---+---+---+---+---+---+\n");
             }
         }
-        return boardString;
+        return boardString.toString();
     }
 }
