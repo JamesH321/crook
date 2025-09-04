@@ -209,17 +209,7 @@ public class MagicBitboards {
                     continue;
                 }
 
-                long blockerMask;
-                if (63 - Long.numberOfTrailingZeros(blockers) < square) {
-                    int blockerSquare = 63 - Long.numberOfTrailingZeros(blockers);
-
-                    blockerMask = (LookupTables.BITBOARD_SQUARES[blockerSquare] - 1)
-                            | LookupTables.BITBOARD_SQUARES[blockerSquare];
-                } else {
-                    int blockerSquare = Long.numberOfLeadingZeros(blockers);
-
-                    blockerMask = -LookupTables.BITBOARD_SQUARES[blockerSquare];
-                }
+                long blockerMask = getBlockerMask(square, blockers);
 
                 blockerAttack |= attackRays[square][j] & blockerMask;
             }
@@ -228,6 +218,21 @@ public class MagicBitboards {
         }
 
         return blockerAttacks;
+    }
+
+    private static long getBlockerMask(int square, long blockers) {
+        long blockerMask;
+        if (63 - Long.numberOfTrailingZeros(blockers) < square) {
+            int blockerSquare = 63 - Long.numberOfTrailingZeros(blockers);
+
+            blockerMask = (LookupTables.BITBOARD_SQUARES[blockerSquare] - 1)
+                    | LookupTables.BITBOARD_SQUARES[blockerSquare];
+        } else {
+            int blockerSquare = Long.numberOfLeadingZeros(blockers);
+
+            blockerMask = -LookupTables.BITBOARD_SQUARES[blockerSquare];
+        }
+        return blockerMask;
     }
 
     /**
