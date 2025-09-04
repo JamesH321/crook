@@ -1,7 +1,7 @@
 package com.github.jamesh321.crook;
 
 /**
- * Represents a chess move encoded as a 16 bit integer with the following
+ * Represents a chess move encoded as a 16-bit integer with the following
  * fields:
  * <ul>
  * <li>The 6 least significant bits (0-5) represent the source square
@@ -63,7 +63,7 @@ public class Move {
      * The string should be in the format of source square + destination square,
      * such as "e2e4", plus an optional promotion piece indicator (q, r, b, n).
      * 
-     * @param move  the string representation of the move (e.g., "e2e4" or "e7e8q"
+     * @param move  the string representation of the move (e.g. "e2e4" or "e7e8q"
      *              for promotion)
      * @param board the current chess board state, needed to identify special moves
      * @throws IllegalArgumentException if the move string is invalid or has
@@ -112,7 +112,7 @@ public class Move {
      * Processes a move string such as "e2e4" and returns the encoded move as an
      * integer.
      * 
-     * @param moveString the string representation of the move (e.g., "e2e4" or
+     * @param moveString the string representation of the move (e.g. "e2e4" or
      *                   "e7e8q" for promotion)
      * @param board      the current chess board state, needed to identify special
      *                   moves
@@ -179,7 +179,7 @@ public class Move {
     /**
      * Determines the special flag associated with the move.
      * Checks for special moves such as promotion, castling, and en passant,
-     * and returns the appropriate flag constant.
+     * and returns the appropriate flag.
      * 
      * @param moveString the string representation of the move
      * @param from       the source square index (0-63)
@@ -277,7 +277,7 @@ public class Move {
     }
 
     /**
-     * Returns the move in standard algebraic notation (e.g., e2e4, e7e8q for
+     * Returns the move in standard algebraic notation (e.g. e2e4, e7e8q for
      * promotion).
      * The format is: from-square + to-square + promotion piece (if applicable).
      *
