@@ -12,7 +12,7 @@ import java.util.HashMap;
  */
 public class Engine {
     private Board board;
-    private Stack<BoardState> history;
+    private final Stack<BoardState> history;
 
     /**
      * Constructs an Engine with the specified board.
