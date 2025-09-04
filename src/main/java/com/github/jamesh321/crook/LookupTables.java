@@ -201,9 +201,9 @@ public final class LookupTables {
         int file = square % 8;
         int rank = square / 8;
         long moves = 0L;
-        for (int direction = 0; direction < directions.length; direction++) {
-            int toFile = file + directions[direction][0];
-            int toRank = rank + directions[direction][1];
+        for (int[] direction : directions) {
+            int toFile = file + direction[0];
+            int toRank = rank + direction[1];
             if (toFile < 0 || toFile > 7 || toRank < 0 || toRank > 7) {
                 continue;
             }
@@ -265,20 +265,13 @@ public final class LookupTables {
         long rayWithoutEdges = ray;
 
         int squareToRemove = -1;
-        switch (direction) {
-            case LookupTables.N:
-                squareToRemove = (square % 8);
-                break;
-            case LookupTables.E:
-                squareToRemove = square + (7 - (square % 8));
-                break;
-            case LookupTables.S:
-                squareToRemove = 56 + (square % 8);
-                break;
-            case LookupTables.W:
-                squareToRemove = square - (square % 8);
-                break;
-        }
+        squareToRemove = switch (direction) {
+            case LookupTables.N -> (square % 8);
+            case LookupTables.E -> square + (7 - (square % 8));
+            case LookupTables.S -> 56 + (square % 8);
+            case LookupTables.W -> square - (square % 8);
+            default -> squareToRemove;
+        };
 
         rayWithoutEdges &= ~LookupTables.BITBOARD_SQUARES[squareToRemove];
 
