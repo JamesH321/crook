@@ -180,7 +180,7 @@ public class Board {
     }
 
     /**
-     * Gets the piece that is on the specified square.
+     * Gets the piece on the specified square.
      *
      * @param square the square on the board (0-63)
      * @return the piece at that square, or null if the square is empty
