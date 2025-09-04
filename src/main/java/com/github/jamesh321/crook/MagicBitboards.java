@@ -99,7 +99,7 @@ public class MagicBitboards {
      * @return A magic number that works for this square and piece type.
      */
     private static long findMagic(int square, boolean isBishop, long[] rays) {
-        long attackMask = getAttackMask(square, rays);
+        long attackMask = getAttackMask(rays);
         int shift = 64 - Long.bitCount(attackMask);
 
         long[] blockerCombinations = generateBlockerCombinations(attackMask);
@@ -148,7 +148,7 @@ public class MagicBitboards {
             long[] rays = isBishop ? LookupTables.BISHOP_RAYS_WITHOUT_EDGES[square]
                     : LookupTables.ROOK_RAYS_WITHOUT_EDGES[square];
 
-            long attackMask = getAttackMask(square, rays);
+            long attackMask = getAttackMask(rays);
             int shift = 64 - Long.bitCount(attackMask);
 
             long[] blockerCombinations = generateBlockerCombinations(attackMask);
@@ -267,11 +267,10 @@ public class MagicBitboards {
      * The attack mask represents all squares that are relevant for
      * determining the piece's attack pattern.
      *
-     * @param square The square the piece is on (currently unused).
      * @param rays   Array of attack rays in all directions.
      * @return Combined attack mask covering all relevant squares.
      */
-    private static long getAttackMask(int square, long[] rays) {
+    private static long getAttackMask(long[] rays) {
         long attackMask = 0;
 
         for (int i = 0; i < 4; i++) {
