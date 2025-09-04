@@ -94,7 +94,7 @@ public class MagicBitboards {
      * a magic number that creates a perfect hash for all blocker patterns.
      *
      * @param square   The square to find a magic number for (0-63).
-     * @param isBishop True for bishop, false for rook.
+     * @param isBishop True for a bishop, false for a rook.
      * @param rays     The attack rays for the piece from this square.
      * @return A magic number that works for this square and piece type.
      */
@@ -138,8 +138,8 @@ public class MagicBitboards {
      * This method populates the BISHOP_ATTACKS and ROOK_ATTACKS arrays with
      * attack patterns for all possible blocker configurations.
      *
-     * @param isBishop            True for bishop initialization, false for rook.
-     * @param slidingPieceAttacks The attack table to initialize.
+     * @param isBishop            True for bishop initialisation, false for rook.
+     * @param slidingPieceAttacks The attack table to initialise.
      */
     private static void initialiseAttacks(boolean isBishop, long[][] slidingPieceAttacks) {
         for (int square = 0; square < 64; square++) {
@@ -190,7 +190,7 @@ public class MagicBitboards {
      * the sliding piece can attack before being blocked.
      *
      * @param square              The square the piece is on.
-     * @param isBishop            True for bishop, false for rook.
+     * @param isBishop            True for a bishop, false for a rook.
      * @param blockerCombinations All possible blocker arrangements.
      * @return Array of attack bitboards corresponding to each blocker combination.
      */
