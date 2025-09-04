@@ -51,10 +51,6 @@ public class Board {
         return bitboards;
     }
 
-    public void setBitboards(long[] bitboards) {
-        this.bitboards = bitboards;
-    }
-
     /**
      * Gets the bitboard for a specific piece.
      * 
