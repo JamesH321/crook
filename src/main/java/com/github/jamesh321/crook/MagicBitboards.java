@@ -218,7 +218,7 @@ public class MagicBitboards {
                 } else {
                     int blockerSquare = Long.numberOfLeadingZeros(blockers);
 
-                    blockerMask = ~(LookupTables.BITBOARD_SQUARES[blockerSquare] - 1);
+                    blockerMask = -LookupTables.BITBOARD_SQUARES[blockerSquare];
                 }
 
                 blockerAttack |= attackRays[square][j] & blockerMask;
