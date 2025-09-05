@@ -1,7 +1,7 @@
 package com.github.jamesh321.crook;
 
 /**
- * Represents a chess piece with its color and type.
+ * Represents a chess piece with its colour and type.
  */
 public enum Piece {
     WHITE_PAWN(0),
@@ -24,7 +24,7 @@ public enum Piece {
     }
 
     /**
-     * Gets the index of the piece in the {@link Board#bitboards} array.
+     * Gets the index of the piece in the array.
      * 
      * @return the index of the piece
      */
@@ -33,7 +33,7 @@ public enum Piece {
     }
 
     /**
-     * Gets the piece from its index in the {@link Board#bitboards} array.
+     * Gets the piece from its index in the array.
      * 
      * @param index the index of the piece
      * @return the piece
