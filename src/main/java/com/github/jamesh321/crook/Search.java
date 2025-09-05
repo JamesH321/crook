@@ -68,7 +68,7 @@ public class Search {
 
             engine.makeMove(move);
 
-            int score = -negaMax(depth - 1, -beta, -alpha, endTime, engine);
+            int score = -negamax(depth - 1, -beta, -alpha, endTime, engine);
 
             engine.undoMove();
 
@@ -107,7 +107,7 @@ public class Search {
      * @return the evaluation score from the perspective of the current player;
      *         returns 12345 if time expired
      */
-    public int negaMax(int depth, int alpha, int beta, long endTime, Engine engine) {
+    public int negamax(int depth, int alpha, int beta, long endTime, Engine engine) {
         if (depth == 0) {
             return Evaluate.board(engine.getBoard());
         }
@@ -133,7 +133,7 @@ public class Search {
 
             engine.makeMove(move);
 
-            int score = -negaMax(depth - 1, -beta, -alpha, endTime, engine);
+            int score = -negamax(depth - 1, -beta, -alpha, endTime, engine);
 
             engine.undoMove();
 
