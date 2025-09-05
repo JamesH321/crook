@@ -136,7 +136,7 @@ public final class Uci implements Runnable {
             long endTime = startTime + timeForMove;
 
             Move lastBestMove = null;
-            Move bestMove = null;
+            Move bestMove;
 
             for (int depth = 1; depth < 100; depth++) {
                 HashMap<String, Object> bestMoveInfo = engine.findBestMove(depth, lastBestMove, endTime);
@@ -157,7 +157,9 @@ public final class Uci implements Runnable {
                         score);
             }
 
-            System.out.println("bestmove " + lastBestMove.toString());
+            if (lastBestMove != null) {
+                System.out.println("bestmove " + lastBestMove);
+            }
 
             searchThread = null;
         });
