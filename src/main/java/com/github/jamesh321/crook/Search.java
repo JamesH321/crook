@@ -95,7 +95,7 @@ public class Search {
      * evaluation.
      * Negamax is a variant of minimax that relies on the zero-sum property of
      * chess,
-     * simplifying the implementation by always maximizing from the current player's
+     * simplifying the implementation by always maximising from the current player's
      * perspective.
      *
      * @param depth   the remaining depth to search (number of half-moves)
@@ -154,7 +154,7 @@ public class Search {
     /**
      * Determines if the current player is in check.
      *
-     * @param board the chess board to analyze
+     * @param board the chess board to analyse
      * @return true if the current player's king is in check, false otherwise
      */
     private boolean inCheck(Board board) {
