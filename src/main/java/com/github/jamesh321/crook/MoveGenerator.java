@@ -44,7 +44,7 @@ public final class MoveGenerator {
 
     /**
      * Generates a list of all pseudo-legal moves for the current board state.
-     * Pseudo-legal moves are moves that are valid based on the piece type,
+     * Pseudo-legal moves are moves that are valid based on the piece type
      * but may leave the king in check.
      *
      * @param board The current board state.
@@ -197,7 +197,7 @@ public final class MoveGenerator {
 
         moveList.addAll(getMoveList(LookupTables.KING_MOVES[from] & movable, from, Move.NORMAL));
         moveList.addAll(
-                getMoveList(getcastleMoves(kingBitboard, emptySquares, from, castlingRights), from, Move.CASTLE));
+                getMoveList(generateCastlingMoves(kingBitboard, emptySquares, from, castlingRights), from, Move.CASTLE));
 
         return moveList;
     }
@@ -272,7 +272,7 @@ public final class MoveGenerator {
 
     /**
      * Checks if the piece being moved is pinned to the king.
-     * A pinned piece cannot move if it would expose the king to an attack.
+     * A pinned piece cannot move if it exposes the king to an attack.
      *
      * @param move       The move to check.
      * @param kingSquare The square the king is on.
@@ -285,9 +285,9 @@ public final class MoveGenerator {
             long occupied = board.getOccupiedSquares();
 
             if (move.getFlag() == Move.EN_PASSANT) {
-                int takenPiecequare = board.isWhiteTurn() ? board.getEnPassantSquare() + 8
+                int takenPieceSquare = board.isWhiteTurn() ? board.getEnPassantSquare() + 8
                         : board.getEnPassantSquare() - 8;
-                occupied &= ~LookupTables.BITBOARD_SQUARES[takenPiecequare];
+                occupied &= ~LookupTables.BITBOARD_SQUARES[takenPieceSquare];
             }
 
             occupied &= ~LookupTables.BITBOARD_SQUARES[move.getFrom()];
@@ -462,7 +462,7 @@ public final class MoveGenerator {
      * @param castlingRights The castling rights for the current side.
      * @return A bitboard of possible castling moves.
      */
-    private static long getcastleMoves(long kingBitboard, long emptySquares, int from, int castlingRights) {
+    private static long generateCastlingMoves(long kingBitboard, long emptySquares, int from, int castlingRights) {
         long QUEENSIDE_MASK = 0b01110000L << 60 - from;
         long KINGSIDE_MASK = 0b00000110L << 60 - from;
         long moves = 0L;
@@ -519,7 +519,7 @@ public final class MoveGenerator {
      *
      * @param moves A bitboard of destination squares.
      * @param from  The starting square of the moves.
-     * @param flag  The flag for the move type (e.g., normal, capture, promotion).
+     * @param flag  The flag for the move type (e.g. normal, capture, promotion).
      * @return An ArrayList of Move objects.
      */
     private static ArrayList<Move> getMoveList(long moves, int from, int flag) {
