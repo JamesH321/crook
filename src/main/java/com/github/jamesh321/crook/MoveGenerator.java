@@ -231,17 +231,13 @@ public final class MoveGenerator {
                 return false;
             }
 
-            if (move.getFrom() != kingSquare && !attackerTaken(move, kingAttackers, board)
+            if (move.getFrom() != kingSquare && attackerTaken(move, kingAttackers, board)
                     && !checkBlocked(move, kingSquare, board)) {
                 return false;
             }
         }
 
-        if (!isLegalCastle(move, board)) {
-            return false;
-        }
-
-        return true;
+        return isLegalCastle(move, board);
 
     }
 
@@ -301,7 +297,7 @@ public final class MoveGenerator {
 
             long attackers = getAttackers(kingSquare, board);
 
-            if (attackers != 0 && !attackerTaken(move, attackers, board)) {
+            if (attackers != 0 && attackerTaken(move, attackers, board)) {
                 board.updateOccupiedSquares();
                 return true;
             }
@@ -329,11 +325,7 @@ public final class MoveGenerator {
 
             if (castleDirection == 2 && isSquareAttacked(move.getFrom() + 1, board)) {
                 return false;
-            } else if (castleDirection == -2 && isSquareAttacked(move.getFrom() - 1, board)) {
-                return false;
-            }
-
-            return true;
+            } else return castleDirection != -2 || !isSquareAttacked(move.getFrom() - 1, board);
         }
 
         return true;
@@ -388,17 +380,17 @@ public final class MoveGenerator {
      */
     private static boolean attackerTaken(Move move, long attackers, Board board) {
         if (Long.bitCount(attackers) != 1) {
-            return false;
+            return true;
         }
 
         int attackerSquare = Long.numberOfLeadingZeros(attackers);
 
         if (move.getFlag() != Move.EN_PASSANT) {
-            return move.getTo() == attackerSquare;
+            return move.getTo() != attackerSquare;
         } else {
             int takenPieceSquare = board.isWhiteTurn() ? board.getEnPassantSquare() + 8
                     : board.getEnPassantSquare() - 8;
-            return takenPieceSquare == attackerSquare;
+            return takenPieceSquare != attackerSquare;
         }
     }
 
