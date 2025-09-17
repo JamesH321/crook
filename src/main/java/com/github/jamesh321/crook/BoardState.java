@@ -7,12 +7,12 @@ package com.github.jamesh321.crook;
  * Doesn't save unnecessary information from a board like composite bitboards.
  */
 public class BoardState {
-    private long[] bitboards;
-    private boolean whiteTurn;
-    private int castlingRights;
-    private int enPassantSquare;
-    private int halfmoveClock;
-    private int fullmoveCounter;
+    private final long[] bitboards;
+    private final boolean whiteTurn;
+    private final int castlingRights;
+    private final int enPassantSquare;
+    private final int halfmoveClock;
+    private final int fullmoveCounter;
 
     /**
      * Copies the essential information from a board to save a position.

@@ -51,10 +51,6 @@ public class Board {
         return bitboards;
     }
 
-    public void setBitboards(long[] bitboards) {
-        this.bitboards = bitboards;
-    }
-
     /**
      * Gets the bitboard for a specific piece.
      * 
@@ -184,7 +180,7 @@ public class Board {
     }
 
     /**
-     * Gets the piece that is on the specified square.
+     * Gets the piece on the specified square.
      *
      * @param square the square on the board (0-63)
      * @return the piece at that square, or null if the square is empty
@@ -210,7 +206,7 @@ public class Board {
         this.whiteTurn = previousState.isWhiteTurn();
         this.castlingRights = previousState.getCastlingRights();
         this.enPassantSquare = previousState.getEnPassantSquare();
-        this.halfmoveClock = previousState.getFullmoveCounter();
+        this.halfmoveClock = previousState.getHalfmoveClock();
         this.fullmoveCounter = previousState.getFullmoveCounter();
         updateCompositeBitboards();
     }

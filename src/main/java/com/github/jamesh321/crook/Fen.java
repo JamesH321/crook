@@ -13,15 +13,15 @@ import java.util.List;
  * <ul>
  * <li><b>Piece placement</b>: Describes the position of all pieces on the
  * board, from rank 8 to rank 1. Numbers are used to represent the number of
- * empty spaces and each rank is seperated by a '/'.</li>
- * <li><b>Active color</b>: 'w' if White is to move, 'b' if Black is to
+ * empty spaces, and each rank is separated by a '/'.</li>
+ * <li><b>Active colour</b>: 'w' if White is to move, 'b' if Black is to
  * move.</li>
  * <li><b>Castling availability</b>: Letters indicating available castling
  * rights (KQkq). Upper case letters are for white and lower case for black. '-'
  * if none.</li>
  * <li><b>En passant target square</b>: The square where en passant capture is
  * possible, or '-' if not applicable.</li>
- * <li><b>Halfmove clock</b>: The number of halfmoves since the last pawn
+ * <li><b>Halfmove clock</b>: The number of half-moves since the last pawn
  * advance or capture (for the fifty-move rule).</li>
  * <li><b>Fullmove number</b>: The number of the full moves. It starts at 1 and
  * increments after Black's move.</li>
@@ -97,7 +97,7 @@ public final class Fen {
      * @param board the board to load the turn to
      */
     private static void setTurn(String turn, Board board) {
-        board.setWhiteTurn(turn.equals("w") ? true : false);
+        board.setWhiteTurn(turn.equals("w"));
     }
 
     /**

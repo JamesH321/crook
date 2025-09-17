@@ -8,8 +8,8 @@ import java.util.HashMap;
  * Implementation of the Universal Chess Interface (UCI) protocol.
  * This class handles communication between a chess GUI and the engine
  * following the UCI protocol specification.
- * https://backscattering.de/chess/uci/
- * 
+ * <a href="https://backscattering.de/chess/uci/">...</a>
+ *
  */
 public final class Uci implements Runnable {
 
@@ -136,7 +136,7 @@ public final class Uci implements Runnable {
             long endTime = startTime + timeForMove;
 
             Move lastBestMove = null;
-            Move bestMove = null;
+            Move bestMove;
 
             for (int depth = 1; depth < 100; depth++) {
                 HashMap<String, Object> bestMoveInfo = engine.findBestMove(depth, lastBestMove, endTime);
@@ -157,7 +157,9 @@ public final class Uci implements Runnable {
                         score);
             }
 
-            System.out.println("bestmove " + lastBestMove.toString());
+            if (lastBestMove != null) {
+                System.out.println("bestmove " + lastBestMove);
+            }
 
             searchThread = null;
         });
@@ -188,7 +190,7 @@ public final class Uci implements Runnable {
 
     /**
      * Finds the index of the "moves" keyword in a position command.
-     * Used to separate the FEN string from the moves list in a position command.
+     * Used to separate the FEN string from the move list in a position command.
      * 
      * @param tokens tokenised command string
      * @return the index of the "moves" token, or -1 if not found
@@ -205,7 +207,7 @@ public final class Uci implements Runnable {
 
     /**
      * Processes a FEN string from a position command and optionally applies
-     * subsequent moves.
+     * moves.
      * Handles both formats:
      * - "position fen [fen string]"
      * - "position fen [fen string] moves [move1] [move2] ..."
@@ -308,7 +310,7 @@ public final class Uci implements Runnable {
      * @param key          the key to look up in the map
      * @param defaultValue the default value to return if the key is missing or
      *                     invalid
-     * @return the value from the map as a long, or defaultValue if not found or
+     * @return the value from the map as a Long, or defaultValue if not found or
      *         invalid
      */
     private static long getLongValue(HashMap<String, String> map, String key, long defaultValue) {

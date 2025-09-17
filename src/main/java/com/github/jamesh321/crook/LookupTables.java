@@ -135,12 +135,7 @@ public final class LookupTables {
      * every square in all four diagonal directions.
      */
     private static void initialiseBishop() {
-        for (int square = 0; square < 64; square++) {
-            BISHOP_RAYS[square][NE] = generateRay(square, NE, DIAGONAL_DIRECTION);
-            BISHOP_RAYS[square][NW] = generateRay(square, NW, DIAGONAL_DIRECTION);
-            BISHOP_RAYS[square][SE] = generateRay(square, SE, DIAGONAL_DIRECTION);
-            BISHOP_RAYS[square][SW] = generateRay(square, SW, DIAGONAL_DIRECTION);
-        }
+        initialiseRays(BISHOP_RAYS, new int[] { NE, NW, SE, SW }, DIAGONAL_DIRECTION);
     }
 
     /**
@@ -165,12 +160,7 @@ public final class LookupTables {
      * every square in all four straight directions.
      */
     private static void initialiseRook() {
-        for (int square = 0; square < 64; square++) {
-            ROOK_RAYS[square][N] = generateRay(square, N, STRAIGHT_DIRECTION);
-            ROOK_RAYS[square][E] = generateRay(square, E, STRAIGHT_DIRECTION);
-            ROOK_RAYS[square][S] = generateRay(square, S, STRAIGHT_DIRECTION);
-            ROOK_RAYS[square][W] = generateRay(square, W, STRAIGHT_DIRECTION);
-        }
+        initialiseRays(ROOK_RAYS, new int[] { N, E, S, W }, STRAIGHT_DIRECTION);
     }
 
     /**
@@ -190,20 +180,29 @@ public final class LookupTables {
         }
     }
 
+    private static void initialiseRays(long[][] raysToInitialise, int[] directions, int[][] directionArray) {
+        for (int square = 0; square < 64; square++) {
+            raysToInitialise[square] = new long[directions.length];
+            for (int i = 0; i < directions.length; i++) {
+                raysToInitialise[square][i] = generateRay(square, directions[i], directionArray);
+            }
+        }
+    }
+
     /**
-     * Generates all of the moves for a piece based in a given direction.
+     * Generates all the moves for a piece based in a given direction.
      * 
      * @param square     the square the moves are from
      * @param directions 2d array with the directions of each possible move
-     * @return bitboard with all of the possible moves from the given square
+     * @return bitboard with all the possible moves from the given square
      */
     private static long generateMovesForDirections(int square, int[][] directions) {
         int file = square % 8;
         int rank = square / 8;
         long moves = 0L;
-        for (int direction = 0; direction < directions.length; direction++) {
-            int toFile = file + directions[direction][0];
-            int toRank = rank + directions[direction][1];
+        for (int[] direction : directions) {
+            int toFile = file + direction[0];
+            int toRank = rank + direction[1];
             if (toFile < 0 || toFile > 7 || toRank < 0 || toRank > 7) {
                 continue;
             }
@@ -218,7 +217,7 @@ public final class LookupTables {
      * @param square         the square the moves are from
      * @param direction      the direction the ray is in
      * @param directionArray 2d array with the directions of each possible move
-     * @return bitboard with all of the possible moves from the given square
+     * @return bitboard with all the possible moves from the given square
      */
     private static long generateRay(int square, int direction, int[][] directionArray) {
         int file = square % 8;
@@ -265,20 +264,13 @@ public final class LookupTables {
         long rayWithoutEdges = ray;
 
         int squareToRemove = -1;
-        switch (direction) {
-            case LookupTables.N:
-                squareToRemove = (square % 8);
-                break;
-            case LookupTables.E:
-                squareToRemove = square + (7 - (square % 8));
-                break;
-            case LookupTables.S:
-                squareToRemove = 56 + (square % 8);
-                break;
-            case LookupTables.W:
-                squareToRemove = square - (square % 8);
-                break;
-        }
+        squareToRemove = switch (direction) {
+            case LookupTables.N -> (square % 8);
+            case LookupTables.E -> square + (7 - (square % 8));
+            case LookupTables.S -> 56 + (square % 8);
+            case LookupTables.W -> square - (square % 8);
+            default -> squareToRemove;
+        };
 
         rayWithoutEdges &= ~LookupTables.BITBOARD_SQUARES[squareToRemove];
 

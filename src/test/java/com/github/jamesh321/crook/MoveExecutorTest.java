@@ -18,7 +18,7 @@ public class MoveExecutorTest {
         Move move = new Move(55, 39, Move.NORMAL);
         MoveExecutor.makeMove(board, move);
         assertEquals(Piece.WHITE_PAWN, board.getPieceAtSquare(39));
-        assertEquals(null, board.getPieceAtSquare(55));
+        assertNull(board.getPieceAtSquare(55));
     }
 
     @Test
@@ -27,8 +27,7 @@ public class MoveExecutorTest {
         Move move = new Move(51, 36, Move.NORMAL);
         MoveExecutor.makeMove(board, move);
         assertEquals(Piece.WHITE_PAWN, board.getPieceAtSquare(36));
-        assertEquals(null, board.getPieceAtSquare(51));
-        assertFalse((board.getBitboard(Piece.BLACK_PAWN) & (1L >>> 63 - 36)) != 0);
+        assertNull(board.getPieceAtSquare(51));
     }
 
     @Test
@@ -37,7 +36,7 @@ public class MoveExecutorTest {
         Move move = new Move(8, 0, Move.ROOK_PROMOTION);
         MoveExecutor.makeMove(board, move);
         assertEquals(Piece.WHITE_ROOK, board.getPieceAtSquare(0));
-        assertEquals(null, board.getPieceAtSquare(8));
+        assertNull(board.getPieceAtSquare(8));
     }
 
     @Test
@@ -51,7 +50,7 @@ public class MoveExecutorTest {
         Move move3 = new Move(31, 22, Move.EN_PASSANT);
         MoveExecutor.makeMove(board, move3);
         assertEquals(Piece.WHITE_PAWN, board.getPieceAtSquare(22));
-        assertEquals(null, board.getPieceAtSquare(30));
+        assertNull(board.getPieceAtSquare(30));
     }
 
     @Test
@@ -64,8 +63,8 @@ public class MoveExecutorTest {
         MoveExecutor.makeMove(board, move3);
         assertEquals(Piece.WHITE_KING, board.getPieceAtSquare(62));
         assertEquals(Piece.WHITE_ROOK, board.getPieceAtSquare(61));
-        assertEquals(null, board.getPieceAtSquare(60));
-        assertEquals(null, board.getPieceAtSquare(63));
+        assertNull(board.getPieceAtSquare(60));
+        assertNull(board.getPieceAtSquare(63));
         assertEquals(0b1100, board.getCastlingRights());
     }
 
@@ -85,8 +84,8 @@ public class MoveExecutorTest {
         board.setWhiteTurn(true);
         assertEquals(Piece.WHITE_KING, board.getPieceAtSquare(58));
         assertEquals(Piece.WHITE_ROOK, board.getPieceAtSquare(59));
-        assertEquals(null, board.getPieceAtSquare(60));
-        assertEquals(null, board.getPieceAtSquare(56));
+        assertNull(board.getPieceAtSquare(60));
+        assertNull(board.getPieceAtSquare(56));
         assertEquals(0b1100, board.getCastlingRights());
     }
 

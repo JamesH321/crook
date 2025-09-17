@@ -94,12 +94,12 @@ public class MagicBitboards {
      * a magic number that creates a perfect hash for all blocker patterns.
      *
      * @param square   The square to find a magic number for (0-63).
-     * @param isBishop True for bishop, false for rook.
+     * @param isBishop True for a bishop, false for a rook.
      * @param rays     The attack rays for the piece from this square.
      * @return A magic number that works for this square and piece type.
      */
     private static long findMagic(int square, boolean isBishop, long[] rays) {
-        long attackMask = getAttackMask(square, rays);
+        long attackMask = getAttackMask(rays);
         int shift = 64 - Long.bitCount(attackMask);
 
         long[] blockerCombinations = generateBlockerCombinations(attackMask);
@@ -138,8 +138,8 @@ public class MagicBitboards {
      * This method populates the BISHOP_ATTACKS and ROOK_ATTACKS arrays with
      * attack patterns for all possible blocker configurations.
      *
-     * @param isBishop            True for bishop initialization, false for rook.
-     * @param slidingPieceAttacks The attack table to initialize.
+     * @param isBishop            True for bishop initialisation, false for rook.
+     * @param slidingPieceAttacks The attack table to initialise.
      */
     private static void initialiseAttacks(boolean isBishop, long[][] slidingPieceAttacks) {
         for (int square = 0; square < 64; square++) {
@@ -148,7 +148,7 @@ public class MagicBitboards {
             long[] rays = isBishop ? LookupTables.BISHOP_RAYS_WITHOUT_EDGES[square]
                     : LookupTables.ROOK_RAYS_WITHOUT_EDGES[square];
 
-            long attackMask = getAttackMask(square, rays);
+            long attackMask = getAttackMask(rays);
             int shift = 64 - Long.bitCount(attackMask);
 
             long[] blockerCombinations = generateBlockerCombinations(attackMask);
@@ -190,7 +190,7 @@ public class MagicBitboards {
      * the sliding piece can attack before being blocked.
      *
      * @param square              The square the piece is on.
-     * @param isBishop            True for bishop, false for rook.
+     * @param isBishop            True for a bishop, false for a rook.
      * @param blockerCombinations All possible blocker arrangements.
      * @return Array of attack bitboards corresponding to each blocker combination.
      */
@@ -209,17 +209,7 @@ public class MagicBitboards {
                     continue;
                 }
 
-                long blockerMask;
-                if (63 - Long.numberOfTrailingZeros(blockers) < square) {
-                    int blockerSquare = 63 - Long.numberOfTrailingZeros(blockers);
-
-                    blockerMask = (LookupTables.BITBOARD_SQUARES[blockerSquare] - 1)
-                            | LookupTables.BITBOARD_SQUARES[blockerSquare];
-                } else {
-                    int blockerSquare = Long.numberOfLeadingZeros(blockers);
-
-                    blockerMask = ~(LookupTables.BITBOARD_SQUARES[blockerSquare] - 1);
-                }
+                long blockerMask = getBlockerMask(square, blockers);
 
                 blockerAttack |= attackRays[square][j] & blockerMask;
             }
@@ -228,6 +218,21 @@ public class MagicBitboards {
         }
 
         return blockerAttacks;
+    }
+
+    private static long getBlockerMask(int square, long blockers) {
+        long blockerMask;
+        if (63 - Long.numberOfTrailingZeros(blockers) < square) {
+            int blockerSquare = 63 - Long.numberOfTrailingZeros(blockers);
+
+            blockerMask = (LookupTables.BITBOARD_SQUARES[blockerSquare] - 1)
+                    | LookupTables.BITBOARD_SQUARES[blockerSquare];
+        } else {
+            int blockerSquare = Long.numberOfLeadingZeros(blockers);
+
+            blockerMask = -LookupTables.BITBOARD_SQUARES[blockerSquare];
+        }
+        return blockerMask;
     }
 
     /**
@@ -267,11 +272,10 @@ public class MagicBitboards {
      * The attack mask represents all squares that are relevant for
      * determining the piece's attack pattern.
      *
-     * @param square The square the piece is on (currently unused).
      * @param rays   Array of attack rays in all directions.
      * @return Combined attack mask covering all relevant squares.
      */
-    private static long getAttackMask(int square, long[] rays) {
+    private static long getAttackMask(long[] rays) {
         long attackMask = 0;
 
         for (int i = 0; i < 4; i++) {

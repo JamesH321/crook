@@ -68,7 +68,7 @@ public class Search {
 
             engine.makeMove(move);
 
-            int score = -negaMax(depth - 1, -beta, -alpha, endTime, engine);
+            int score = -negamax(depth - 1, -beta, -alpha, endTime, engine);
 
             engine.undoMove();
 
@@ -95,7 +95,7 @@ public class Search {
      * evaluation.
      * Negamax is a variant of minimax that relies on the zero-sum property of
      * chess,
-     * simplifying the implementation by always maximizing from the current player's
+     * simplifying the implementation by always maximising from the current player's
      * perspective.
      *
      * @param depth   the remaining depth to search (number of half-moves)
@@ -107,7 +107,7 @@ public class Search {
      * @return the evaluation score from the perspective of the current player;
      *         returns 12345 if time expired
      */
-    public int negaMax(int depth, int alpha, int beta, long endTime, Engine engine) {
+    public int negamax(int depth, int alpha, int beta, long endTime, Engine engine) {
         if (depth == 0) {
             return Evaluate.board(engine.getBoard());
         }
@@ -133,7 +133,7 @@ public class Search {
 
             engine.makeMove(move);
 
-            int score = -negaMax(depth - 1, -beta, -alpha, endTime, engine);
+            int score = -negamax(depth - 1, -beta, -alpha, endTime, engine);
 
             engine.undoMove();
 
@@ -154,7 +154,7 @@ public class Search {
     /**
      * Determines if the current player is in check.
      *
-     * @param board the chess board to analyze
+     * @param board the chess board to analyse
      * @return true if the current player's king is in check, false otherwise
      */
     private boolean inCheck(Board board) {
