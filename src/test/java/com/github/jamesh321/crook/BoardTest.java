@@ -23,8 +23,8 @@ public class BoardTest {
 
     @Test
     void getPieceAtSquare_shouldReturnEmptySquare() {
-        assertEquals(null, board.getPieceAtSquare(24));
-        assertEquals(null, board.getPieceAtSquare(28));
-        assertEquals(null, board.getPieceAtSquare(31));
+        assertNull(board.getPieceAtSquare(24));
+        assertNull(board.getPieceAtSquare(28));
+        assertNull(board.getPieceAtSquare(31));
     }
 }
