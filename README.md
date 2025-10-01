@@ -4,26 +4,34 @@ A chess engine written in Java that is compatible with the [Universal Chess Inte
 
 ## Features
 
-*   **UCI Compatible**, allowing it to be used with a variety of chess GUIs
-*   **Bitboards** to represent the board
+*   UCI Compatible, allowing it to be used with a variety of chess GUIs
+
+
+*   Bitboards to represent the board
+
+
 *   **Move Generation:**
     * Pre-computed lookup tables for non-sliding piece move generation
-    * **Magic bitboards** for sliding piece move generation
+    * Magic bitboards for sliding piece move generation
     * Provides code for generating magic numbers
+
+
 *   **Search:**
-    *   Uses **negamax** algorithm, which is a variation of the minimax algorithm
-    *   **Iterative deepening**
+    *   Uses negamax algorithm, which is a variation of the minimax algorithm
+    *   Iterative deepening
+
+
 *   **Evaluation:**
-    *  **Material balance** score
-    * Basic **piece-square tables** for each piece and separate king tables for the middle and end phases of the game
+    *  Material balance score
+    * Basic piece-square tables for each piece and separate king tables for the middle and end phases of the game
 
 ## Installation
 
-1.  **Prerequisites:**
+*   **Prerequisites:**
     *   Java 17 or higher
     *   Apache Maven
 
-2.  **Build:**
+*   **Build:**
     *   Clone the repository.
     *   Open a terminal in the project's root directory and run the following command:
         ```bash
